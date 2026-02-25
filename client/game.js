@@ -106,7 +106,10 @@ function joinLobby() {
     // URL'den modu ve ismi al
     const urlParams = new URLSearchParams(window.location.search);
     const mode = parseInt(urlParams.get('mode')) || 4;
-    const playerName = urlParams.get('name') || 'Player';
+    // URL decode işlemi otomatik yapılır ama güvenli olsun
+    let playerName = urlParams.get('name') || 'Player';
+    
+    console.log("URL'den alınan isim:", playerName); // Debug
     
     gameSocket.emit('join_lobby', { mode: mode, name: playerName });
 }
@@ -155,7 +158,8 @@ function updatePlayerSlots(players) {
                 
                 if (playerName) {
                     // İsmi sunucudan gelen veriden al, yoksa varsayılanı kullan
-                    playerName.textContent = player.name || `Player ${player.id.substr(0,4)}`;
+                    // console.log("Player name:", player.name); // Debug için
+                    playerName.textContent = (player.name && player.name.trim() !== '') ? player.name : `Player ${player.id.substr(0,4)}`;
                 }
                 
                 if (playerStatus) {

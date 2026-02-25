@@ -91,8 +91,11 @@ function joinLobby(mode = 4) {
     console.log('Lobiye katılıyor... Mod:', mode, 'İsim:', playerName);
     
     // Ana sayfadan game sayfasına geç
+    // URL encode işlemini düzelt
+    const encodedName = encodeURIComponent(playerName).replace(/'/g, "%27").replace(/"/g, "%22");
+    
     setTimeout(function() {
-        window.location.href = '/game?mode=' + mode + '&name=' + encodeURIComponent(playerName);
+        window.location.href = `/game?mode=${mode}&name=${encodedName}`;
     }, 500);
 }
 
