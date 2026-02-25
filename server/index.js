@@ -30,27 +30,28 @@ app.get('/game', (req, res) => {
 io.on('connection', (socket) => {
   console.log('Yeni oyuncu bağlandı:', socket.id);
 
-  socket.on('join_lobby', () => {
+  socket.on('join_lobby', (data) => {
+    const mode = (data && data.mode) ? data.mode : 4;
     const player = gameManager.addPlayer(socket.id);
-    const room = gameManager.findOrCreateRoom();
+    const room = gameManager.findOrCreateRoom(mode);
     
     socket.join(room.id);
     room.addPlayer(player);
     
-    console.log(`Oyuncu ${socket.id} ${room.id} odasına katıldı`);
+    console.log(`Oyuncu ${socket.id} ${room.id} odasına katıldı (Mod: ${mode})`);
     
     socket.emit('lobby_update', {
       roomId: room.id,
       players: room.getPlayers(),
       playerCount: room.players.length,
-      maxPlayers: 4
+      maxPlayers: room.maxPlayers
     });
     
     socket.to(room.id).emit('lobby_update', {
       roomId: room.id,
       players: room.getPlayers(),
       playerCount: room.players.length,
-      maxPlayers: 4
+      maxPlayers: room.maxPlayers
     });
 
     if (room.isFull()) {
@@ -76,7 +77,7 @@ io.on('connection', (socket) => {
         roomId: room.id,
         players: room.getPlayers(),
         playerCount: room.players.length,
-        maxPlayers: 4
+        maxPlayers: room.maxPlayers
       });
 
       if (room.allPlayersReady()) {

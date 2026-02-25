@@ -47,10 +47,15 @@ function initializeLobby() {
         updateRacePositions(data);
     });
     
-    // Ana sayfadaki "YARIŞA KATIL" butonunu dinle
-    const joinRaceBtn = document.getElementById('joinRaceBtn');
-    if (joinRaceBtn) {
-        joinRaceBtn.addEventListener('click', joinLobby);
+    // Ana sayfadaki "YARIŞA KATIL" butonlarını dinle
+    const joinRaceBtn2 = document.getElementById('joinRaceBtn2');
+    if (joinRaceBtn2) {
+        joinRaceBtn2.addEventListener('click', () => joinLobby(2));
+    }
+
+    const joinRaceBtn4 = document.getElementById('joinRaceBtn4');
+    if (joinRaceBtn4) {
+        joinRaceBtn4.addEventListener('click', () => joinLobby(4));
     }
     
     // Game sayfasındaki hazır butonunu dinle
@@ -73,14 +78,13 @@ function initializeLobby() {
     }
 }
 
-function joinLobby() {
-    console.log('Lobiye katılıyor...');
-    socket.emit('join_lobby');
+function joinLobby(mode = 4) {
+    console.log('Lobiye katılıyor... Mod:', mode);
     
     // Ana sayfadan game sayfasına geç
     setTimeout(function() {
-        window.location.href = '/game';
-    }, 1000);
+        window.location.href = '/game?mode=' + mode;
+    }, 500);
 }
 
 function updateLobbyUI(data) {

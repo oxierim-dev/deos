@@ -84,7 +84,7 @@ class Room {
   }
 
   isFull() {
-    return this.players.length === 4;
+    return this.players.length === this.maxPlayers;
   }
 
   allPlayersReady() {
@@ -125,15 +125,15 @@ class GameManager {
     }
   }
 
-  findOrCreateRoom() {
+  findOrCreateRoom(mode = 4) {
     for (const room of this.rooms.values()) {
-      if (!room.isFull() && room.gameState === 'waiting') {
+      if (!room.isFull() && room.gameState === 'waiting' && room.maxPlayers === mode) {
         return room;
       }
     }
     
     const roomId = `room_${++this.roomCounter}`;
-    const room = new Room(roomId);
+    const room = new Room(roomId, mode);
     this.rooms.set(roomId, room);
     return room;
   }

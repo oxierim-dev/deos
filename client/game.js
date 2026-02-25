@@ -96,14 +96,19 @@ function setupEventListeners() {
 function joinLobby() {
     console.log('Lobiye katılıyor...');
     gameState = 'lobby';
-    gameSocket.emit('join_lobby');
+    
+    // URL'den modu al
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = parseInt(urlParams.get('mode')) || 4;
+    
+    gameSocket.emit('join_lobby', { mode: mode });
 }
 
 function updateLobbyUI(data) {
     // Oyuncu sayacını güncelle
     const playerCounter = document.getElementById('playerCounter');
     if (playerCounter) {
-        playerCounter.textContent = `Oyuncu bekleniyor... (${data.playerCount}/4)`;
+        playerCounter.textContent = `Oyuncu bekleniyor... (${data.playerCount}/${data.maxPlayers})`;
     }
     
     // Oyuncu slotlarını güncelle
@@ -112,7 +117,7 @@ function updateLobbyUI(data) {
     // Hazır butonunu kontrol et
     const readyBtn = document.getElementById('readyBtn');
     if (readyBtn) {
-        if (data.playerCount === 4) {
+        if (data.playerCount === data.maxPlayers) {
             readyBtn.disabled = false;
             readyBtn.style.opacity = '1';
             readyBtn.innerHTML = '<span class="btn-text">HAZIR MISIN?</span><div class="btn-glow"></div>';
