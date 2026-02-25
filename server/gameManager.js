@@ -66,6 +66,7 @@ class Room {
   getPositions() {
     return this.players.map(p => ({
       id: p.id,
+      name: p.name,
       position: p.position,
       color: p.color
     }));
