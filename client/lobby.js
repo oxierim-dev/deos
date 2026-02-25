@@ -79,11 +79,20 @@ function initializeLobby() {
 }
 
 function joinLobby(mode = 4) {
-    console.log('Lobiye katılıyor... Mod:', mode);
+    const nameInput = document.getElementById('playerNameInput');
+    const playerName = nameInput ? nameInput.value.trim() : '';
+    
+    if (!playerName) {
+        alert('Lütfen bir kullanıcı adı giriniz!');
+        if (nameInput) nameInput.focus();
+        return;
+    }
+    
+    console.log('Lobiye katılıyor... Mod:', mode, 'İsim:', playerName);
     
     // Ana sayfadan game sayfasına geç
     setTimeout(function() {
-        window.location.href = '/game?mode=' + mode;
+        window.location.href = '/game?mode=' + mode + '&name=' + encodeURIComponent(playerName);
     }, 500);
 }
 

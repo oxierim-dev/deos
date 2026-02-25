@@ -103,11 +103,12 @@ function joinLobby() {
     console.log('Lobiye katılıyor...');
     gameState = 'lobby';
     
-    // URL'den modu al
+    // URL'den modu ve ismi al
     const urlParams = new URLSearchParams(window.location.search);
     const mode = parseInt(urlParams.get('mode')) || 4;
+    const playerName = urlParams.get('name') || 'Player';
     
-    gameSocket.emit('join_lobby', { mode: mode });
+    gameSocket.emit('join_lobby', { mode: mode, name: playerName });
 }
 
 function updateLobbyUI(data) {

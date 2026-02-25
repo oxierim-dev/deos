@@ -136,11 +136,12 @@ class GameManager {
       if (room) {
         room.removePlayer(playerId);
         // Odayı silmiyoruz, sadece oyuncuyu çıkarıyoruz.
-        // Eğer oda boşaldıysa ve oyun bitmişse durumu resetleyebiliriz.
-        if (room.players.length === 0) {
-           room.reset();
-           room.gameState = 'waiting';
-        }
+         // Eğer oda boşaldıysa ve oyun bitmişse durumu resetleyebiliriz.
+         if (room.players.length === 0) {
+            console.log(`Oda ${room.id} boşaldı, resetleniyor.`);
+            room.reset();
+            room.gameState = 'waiting';
+         }
       }
       this.players.delete(playerId);
     }

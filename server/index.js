@@ -32,7 +32,9 @@ io.on('connection', (socket) => {
 
   socket.on('join_lobby', (data) => {
     const mode = (data && data.mode) ? data.mode : 4;
-    const player = gameManager.addPlayer(socket.id);
+    const playerName = (data && data.name) ? data.name : null;
+    
+    const player = gameManager.addPlayer(socket.id, playerName);
     const room = gameManager.findAvailableRoom(mode);
     
     if (!room) {
