@@ -1,0 +1,20 @@
+{
+  "name": "deos-racing-simulator",
+  "version": "1.0.0",
+  "description": "DEOS RACING SIMULATOR - Çok oyunculu 2D yarış oyunu",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "keywords": ["racing", "game", "multiplayer", "socket.io", "deos"],
+  "author": "DEOS",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
