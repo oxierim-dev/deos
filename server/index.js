@@ -57,6 +57,13 @@ io.on('connection', (socket) => {
       io.to(room.id).emit('all_ready', {
         countdown: 5
       });
+      
+      // 5 saniye sonra yarışı otomatik başlat
+      setTimeout(() => {
+        if (room.gameState !== 'racing') {
+          startRace(room);
+        }
+      }, 5000);
     }
   });
 
