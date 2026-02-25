@@ -60,6 +60,12 @@ function initializeGame() {
         showResults(data);
     });
     
+    // Hata mesajlarını dinle
+    gameSocket.on('error_message', function(data) {
+        alert(data.message);
+        window.location.href = '/';
+    });
+    
     // Buton olaylarını bağla
     setupEventListeners();
 }

@@ -33,7 +33,12 @@ io.on('connection', (socket) => {
   socket.on('join_lobby', (data) => {
     const mode = (data && data.mode) ? data.mode : 4;
     const player = gameManager.addPlayer(socket.id);
-    const room = gameManager.findOrCreateRoom(mode);
+    const room = gameManager.findAvailableRoom(mode);
+    
+    if (!room) {
+        socket.emit('error_message', { message: 'Tüm odalar dolu! Lütfen daha sonra tekrar deneyin.' });
+        return;
+    }
     
     socket.join(room.id);
     room.addPlayer(player);

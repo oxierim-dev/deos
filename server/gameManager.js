@@ -103,6 +103,24 @@ class GameManager {
     this.rooms = new Map();
     this.players = new Map();
     this.roomCounter = 0;
+    
+    // Sabit 2 oda oluştur
+    // Oda 1: 4 kişilik (Varsayılan olarak başlatılır, mod isteğine göre değişebilir ama burada sabitliyoruz)
+    // Ancak kullanıcının isteği "SADECE 2 ROOM OLSUN" ve mod seçeneği de var.
+    // Mod seçeneğiyle oda kapasitesi değişiyor.
+    // Kullanıcının dediği: "ROOM 1 DOLU DEĞİLSE ORAYA, DOLUYSA ROOM 2'YE"
+    // Bu durumda dinamik oda yaratmayı kapatıp, sabit 2 oda üzerinden gideceğiz.
+    // Ancak mod seçimi ne olacak?
+    // Kullanıcı "HEM 2Lİ HEM 4LÜ OLSUN" dedi, sonra "SADECE 2 ODA OLSUN" dedi.
+    // Basitlik için: Oda 1 ve Oda 2 her zaman var olacak.
+    // İlk giren oyuncunun seçtiği moda göre odanın kapasitesi o anlık belirlenebilir veya
+    // Oda 1 ve Oda 2 sabit kalır, mod seçimi sadece odaya girişte kontrol edilir.
+    
+    // En mantıklısı: Dinamik oda yaratmayı (findOrCreateRoom) değiştirmek.
+    // Sadece 'room_1' ve 'room_2' kullanılacak.
+    
+    this.rooms.set('room_1', new Room('room_1', 4)); // Başlangıçta 4 kişilik varsayalım
+    this.rooms.set('room_2', new Room('room_2', 4));
   }
 
   addPlayer(playerId) {
@@ -117,26 +135,44 @@ class GameManager {
       const room = this.getRoomByPlayerId(playerId);
       if (room) {
         room.removePlayer(playerId);
+        // Odayı silmiyoruz, sadece oyuncuyu çıkarıyoruz.
+        // Eğer oda boşaldıysa ve oyun bitmişse durumu resetleyebiliriz.
         if (room.players.length === 0) {
-          this.rooms.delete(room.id);
+           room.reset();
+           room.gameState = 'waiting';
         }
       }
       this.players.delete(playerId);
     }
   }
 
-  findOrCreateRoom(mode = 4) {
-    for (const room of this.rooms.values()) {
-      if (!room.isFull() && room.gameState === 'waiting' && room.maxPlayers === mode) {
-        return room;
-      }
+  findAvailableRoom(mode = 4) {
+    const room1 = this.rooms.get('room_1');
+    const room2 = this.rooms.get('room_2');
+    
+    // Önce Oda 1'i kontrol et
+    // Eğer oda boşsa, modunu güncelle
+    if (room1.players.length === 0) {
+        room1.maxPlayers = mode;
     }
     
-    const roomId = `room_${++this.roomCounter}`;
-    const room = new Room(roomId, mode);
-    this.rooms.set(roomId, room);
-    return room;
+    // Oda 1 uygun mu? (Boş yer var, oyun başlamamış, ve modu uyumlu)
+    if (!room1.isFull() && room1.gameState === 'waiting' && room1.maxPlayers === mode) {
+        return room1;
+    }
+    
+    // Oda 2'yi kontrol et
+    if (room2.players.length === 0) {
+        room2.maxPlayers = mode;
+    }
+    
+    if (!room2.isFull() && room2.gameState === 'waiting' && room2.maxPlayers === mode) {
+        return room2;
+    }
+    
+    return null; // İkisi de dolu
   }
+
 
   getRoomByPlayerId(playerId) {
     for (const room of this.rooms.values()) {
