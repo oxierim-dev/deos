@@ -11,56 +11,33 @@ let finishLineX;
 let backgroundOffset = 0;
 let trackOffset = 0;
 
-// Araba çizimi (Pixel Art Style)
+// Araba görseli
+const carImage = new Image();
+carImage.src = 'Car1.png';
+
+// Araba çizimi (Image)
 function drawPixelCar(ctx, x, y, color, scale = 1) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(scale, scale);
+    ctx.scale(scale * 0.3, scale * 0.3); // Görseli küçült (Orijinal boyutuna göre ayarla)
 
-    // Gövde Rengi
-    ctx.fillStyle = color;
-    
-    // Alt gövde
-    ctx.fillRect(0, 10, 60, 12);
-    // Üst gövde (kabin)
-    ctx.fillRect(15, 0, 30, 10);
-    
-    // Camlar
-    ctx.fillStyle = '#87CEEB'; // Açık mavi
-    ctx.fillRect(32, 2, 10, 6); // Ön cam
-    
-    // Tekerlekler
-    ctx.fillStyle = '#333';
-    // Arka tekerlek
-    ctx.beginPath();
-    ctx.arc(12, 22, 7, 0, Math.PI * 2);
-    ctx.fill();
-    // Ön tekerlek
-    ctx.beginPath();
-    ctx.arc(48, 22, 7, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Jantlar
-    ctx.fillStyle = '#silver';
-    ctx.beginPath();
-    ctx.arc(12, 22, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(48, 22, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Detaylar (Far, Stop lambası)
-    ctx.fillStyle = '#FFFF00'; // Far
-    ctx.fillRect(58, 12, 2, 4);
-    
-    ctx.fillStyle = '#FF0000'; // Stop
-    ctx.fillRect(0, 12, 2, 4);
+    // Araba görselini çiz
+    ctx.drawImage(carImage, 0, 0);
 
-    // Numara
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 8px Arial';
-    ctx.fillText('DEOS', 18, 18);
-
+    // Renk filtresi (Basit bir renk ayrımı için altına renkli bir gölge veya overlay ekleyebiliriz)
+    // Ancak görsel tek tip olduğu için, oyuncuları ayırt etmek adına ismin rengini kullanıyoruz zaten.
+    // Yine de arabanın altına oyuncu renginde bir "aura" ekleyelim.
+    
+    ctx.restore();
+    
+    // Aura / Seçim halkası (Arabanın kime ait olduğunu belli etmek için)
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(30, 20, 40, 15, 0, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
 }
 
