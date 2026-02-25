@@ -154,7 +154,8 @@ function updatePlayerSlots(players) {
                 }
                 
                 if (playerName) {
-                    playerName.textContent = player.name;
+                    // İsmi sunucudan gelen veriden al, yoksa varsayılanı kullan
+                    playerName.textContent = player.name || `Player ${player.id.substr(0,4)}`;
                 }
                 
                 if (playerStatus) {
