@@ -2,7 +2,7 @@ $gitPath = "C:\Program Files\Git\cmd\git.exe"
 Write-Host "Adding Files..."
 & $gitPath add .
 Write-Host "Committing..."
-& $gitPath commit -m "Add 2-player and 4-player game modes"
+& $gitPath commit -m "Show Room ID in Lobby and add cache busting"
 Write-Host "Pushing..."
 & $gitPath push origin main
 Write-Host "Done!"

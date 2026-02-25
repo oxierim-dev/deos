@@ -108,7 +108,7 @@ function updateLobbyUI(data) {
     // Oyuncu sayacını güncelle
     const playerCounter = document.getElementById('playerCounter');
     if (playerCounter) {
-        playerCounter.textContent = `Oyuncu bekleniyor... (${data.playerCount}/${data.maxPlayers})`;
+        playerCounter.innerHTML = `Oda: <strong>${data.roomId}</strong><br>Oyuncu bekleniyor... (${data.playerCount}/${data.maxPlayers})`;
     }
     
     // Oyuncu slotlarını güncelle
