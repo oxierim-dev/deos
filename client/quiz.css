@@ -24,6 +24,7 @@ body {
     border: 2px solid #a0a0a0;
     margin-top: 20px;
     margin-bottom: 20px;
+    transform-origin: center center;
 }
 
 .gameboy-top {
@@ -194,6 +195,18 @@ body {
     left: 50px;
     width: 300px;
     border-top-left-radius: 15px;
+    position: relative;
+}
+
+#enemy-status::after {
+    content: "▶";
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: #f85838;
+    text-shadow: 2px 2px 0 #000;
 }
 
 #player-status {
@@ -201,6 +214,18 @@ body {
     right: 50px;
     width: 300px;
     border-top-left-radius: 15px;
+    position: relative;
+}
+
+#player-status::before {
+    content: "◀";
+    position: absolute;
+    left: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: #18c020;
+    text-shadow: 2px 2px 0 #000;
 }
 
 .name-level {
@@ -358,22 +383,6 @@ body {
     height: 100%;
 }
 
-#btn-0 {
-    color: #d12020;
-}
-
-#btn-1 {
-    color: #2050d1;
-}
-
-#btn-2 {
-    color: #8b20d1;
-}
-
-#btn-3 {
-    color: #303030;
-}
-
 .option-btn {
     background-color: transparent;
     border: none;
@@ -381,26 +390,9 @@ body {
     font-size: 14px;
     color: #404040;
     text-align: left;
-    cursor: pointer;
     padding: 10px 10px 10px 30px;
     position: relative;
     border-radius: 5px;
-    transition: background 0.2s;
-}
-
-.option-btn:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.option-btn:hover:not(:disabled)::before {
-    content: "▶";
-    position: absolute;
-    left: 10px;
-    color: #e02020;
-    font-size: 16px;
-}
-
-.option-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+    pointer-events: none;
+    /* Prevents direct clicking and hover */
 }
