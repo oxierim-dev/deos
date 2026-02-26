@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEOS Quiz Battle</title>
+    <!-- Pixel Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Battle Scene -->
+        <div id="battle-scene">
+            <!-- Enemy Status -->
+            <div id="enemy-status" class="status-box">
+                <div class="name-level">
+                    <span class="name">DEOS CAR</span>
+                    <span class="level">Lv99</span>
+                </div>
+                <div class="hp-bar-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar-track">
+                        <div id="enemy-hp-fill" class="hp-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enemy Sprite -->
+            <div id="enemy-sprite-container">
+                <img id="enemy-sprite" src="/public/DEOS CAR NORMAL.png" alt="Deos Car">
+            </div>
+
+            <!-- Player Sprite (Trainer) Fake -->
+             <div id="player-sprite-container">
+                 <div class="trainer-placeholder"></div>
+             </div>
+
+            <!-- Player Status -->
+             <div id="player-status" class="status-box">
+                <div class="name-level">
+                    <span class="name">OYUNCU</span>
+                    <span class="level">Lv50</span>
+                </div>
+                <div class="hp-bar-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar-track">
+                        <div class="hp-bar-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialogue Box -->
+        <div id="dialogue-box">
+            <div id="dialogue-text">
+                Vahşi DEOS CAR belirdi!
+            </div>
+            <div id="options-grid" style="display: none;">
+                <button class="option-btn" onclick="selectAnswer(0)" id="btn-0">A) Seçenek</button>
+                <button class="option-btn" onclick="selectAnswer(1)" id="btn-1">B) Seçenek</button>
+                <button class="option-btn" onclick="selectAnswer(2)" id="btn-2">C) Seçenek</button>
+                <button class="option-btn" onclick="selectAnswer(3)" id="btn-3">D) Seçenek</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+/* quiz.css */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #2b2b2b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Press Start 2P', cursive;
+    overflow: hidden;
+    user-select: none;
+}
+
+#game-container {
+    width: 800px;
+    height: 600px;
+    background: linear-gradient(180deg, #d3f9d8 0%, #a2d2a6 50%, #7db983 100%);
+    position: relative;
+    border: 4px solid #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Battle Scene */
+#battle-scene {
+    flex: 1;
+    position: relative;
+}
+
+/* Status Boxes */
+.status-box {
+    background-color: #f8f8d8;
+    border: 4px solid #686868;
+    border-radius: 8px;
+    border-bottom-color: #d8d8b0;
+    border-right-color: #d8d8b0;
+    border-top-color: #505050;
+    border-left-color: #505050;
+    padding: 12px;
+    position: absolute;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+
+#enemy-status {
+    top: 50px;
+    left: 50px;
+    width: 300px;
+    border-top-left-radius: 15px;
+}
+
+#player-status {
+    bottom: 30px;
+    right: 50px;
+    width: 300px;
+    border-top-left-radius: 15px;
+}
+
+.name-level {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #303030;
+}
+
+.hp-bar-container {
+    display: flex;
+    align-items: center;
+    background: #506858;
+    border-radius: 20px;
+    padding: 4px 6px;
+    border: 3px solid #303030;
+}
+
+.hp-label {
+    color: #f8d870;
+    font-size: 14px;
+    margin-right: 8px;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.hp-bar-track {
+    flex: 1;
+    height: 14px;
+    background-color: #484048;
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #202020;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    background-color: #18c020;
+    width: 100%;
+    transition: width 0.5s ease-out, background-color 0.3s;
+}
+
+.hp-yellow { background-color: #f8b000; }
+.hp-red { background-color: #f85838; }
+
+/* Sprites */
+#enemy-sprite-container {
+    position: absolute;
+    top: 100px;
+    right: 100px;
+    width: 250px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+#enemy-sprite {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.4));
+}
+
+#player-sprite-container {
+    position: absolute;
+    bottom: 20px;
+    left: 80px;
+    width: 150px;
+    height: 200px;
+}
+
+.trainer-placeholder {
+    width: 100%;
+    height: 100%;
+    background: url('https://cdn.pixabay.com/photo/2021/04/18/13/35/pixel-6188445_1280.png') no-repeat bottom center;
+    background-size: contain;
+    filter: brightness(0) invert(0.2) drop-shadow(0 10px 5px rgba(0,0,0,0.5));
+}
+
+/* Animations */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-15px) rotate(-5deg); }
+    50% { transform: translateX(15px) rotate(5deg); }
+    75% { transform: translateX(-15px) rotate(-5deg); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; filter: brightness(2) contrast(2); }
+}
+
+.damage-anim {
+    animation: blink 0.1s 4, shake 0.4s 1;
+}
+
+/* Dialogue Box */
+#dialogue-box {
+    height: 160px;
+    background-color: #f8f8f8;
+    border: 8px solid #505050;
+    border-radius: 12px;
+    margin: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 0 4px #d0d0c8, 0 6px 0 rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 10;
+}
+
+#dialogue-text {
+    font-size: 18px;
+    line-height: 32px;
+    color: #404040;
+    flex: 1;
+}
+
+#options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 15px;
+    height: 100%;
+}
+
+.option-btn {
+    background-color: transparent;
+    border: none;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    color: #404040;
+    text-align: left;
+    cursor: pointer;
+    padding: 10px 10px 10px 30px;
+    position: relative;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.option-btn:hover:not(:disabled) {
+    background: rgba(0,0,0,0.05);
+}
+
+.option-btn:hover:not(:disabled)::before {
+    content: "▶";
+    position: absolute;
+    left: 10px;
+    color: #e02020;
+    font-size: 16px;
+}
+
+.option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

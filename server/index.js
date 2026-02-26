@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 const gameManager = new GameManager();
 
 app.use(express.static(path.join(__dirname, '../client')));
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
@@ -25,6 +26,10 @@ app.get('/', (req, res) => {
 
 app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/game.html'));
+});
+
+app.get('/quiz', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/quiz.html'));
 });
 
 // Player AFK Timer Objesi
