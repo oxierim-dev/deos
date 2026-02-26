@@ -26,10 +26,10 @@ function drawPixelCar(ctx, x, y, color, scale = 1) {
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.ellipse(30, 20, 60, 25, 0, 0, Math.PI * 2);
+    ctx.ellipse(30, 15, 55, 20, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Altındaki zemini neon renkle hafif boyayalım
+    // Altındaki zemini hafif boyayalım
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.3;
     ctx.fill();
@@ -37,9 +37,8 @@ function drawPixelCar(ctx, x, y, color, scale = 1) {
 
     ctx.save();
     ctx.translate(x, y);
-    // Arabayı yeni boyutuyla çiziyoruz, Image küçültüldüğü için ölçeği 1 yapıyoruz
-    // Resmi ortalayarak çiz
-    ctx.drawImage(carImage, -20, -25);
+    // Arabayı yeni boyutuyla çiziyoruz (Genişlik: 100, Yükseklik: 45)
+    ctx.drawImage(carImage, -20, -7.5, 100, 45);
     ctx.restore();
 }
 
