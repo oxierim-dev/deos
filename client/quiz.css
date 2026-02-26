@@ -195,7 +195,6 @@ body {
     left: 50px;
     width: 300px;
     border-top-left-radius: 15px;
-    position: relative;
 }
 
 #enemy-status::after {
@@ -214,7 +213,6 @@ body {
     right: 50px;
     width: 300px;
     border-top-left-radius: 15px;
-    position: relative;
 }
 
 #player-status::before {
