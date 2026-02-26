@@ -78,9 +78,17 @@ io.on('connection', (socket) => {
       });
 
       if (room.allPlayersReady()) {
+        // Herkes hazır olduğunda client'lara geri sayımı başlatmalarını söyle (Lobi ekranı silinir!)
+        io.to(room.id).emit('all_ready', {
+          countdown: 3
+        });
+
+        // Geri sayım bittiğinde (3 saniye sonra) yarışı asıl başlatan komutu gönder
         setTimeout(() => {
-          startRace(room);
-        }, 1000);
+          if (room.gameState !== 'racing') {
+            startRace(room);
+          }
+        }, 3000);
       }
     }
   });

@@ -113,6 +113,10 @@ function updateCanvasPositions(positions) {
             // Hedef X pozisyonu
             const targetX = screenStart + (screenEnd - screenStart) * progress;
 
+            // Rendersafe X coordinate against CSS layout NaN corruptions
+            if (!isFinite(targetX)) return;
+            if (!isFinite(cars[carIndex].x)) cars[carIndex].x = targetX;
+
             // Yumuşak geçiş (Interpolation)
             cars[carIndex].x += (targetX - cars[carIndex].x) * 0.1;
 
@@ -162,8 +166,12 @@ function drawParticles() {
         ctx.fillStyle = p.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = p.color;
+        
         ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.random() * 4 + 2, 0, Math.PI * 2);
+        // Guard against NaN values crashing the renderer context arc func
+        if (isFinite(p.x) && isFinite(p.y)) {
+            ctx.arc(p.x, p.y, Math.random() * 4 + 2, 0, Math.PI * 2);
+        }
         ctx.fill();
         ctx.restore();
     }
