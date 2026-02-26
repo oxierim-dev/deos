@@ -98,10 +98,32 @@
         // Ses dosyası tetikleyicisi
         document.body.addEventListener('click', () => {
             const bgm = document.getElementById('bg-music');
-            if (bgm.paused) {
+            if (bgm && bgm.paused) {
                 bgm.play().catch(e => console.log('Autoplay engellendi:', e));
             }
         }, { once: true });
+
+        // Responsive Dikey Ekran Ölçekleme (iOS & Android tam uyum için)
+        function resizeGameboy() {
+            const wrapper = document.getElementById('gameboy-wrapper');
+            if (!wrapper) return;
+            const targetWidth = window.innerWidth * 0.90;
+            const targetHeight = window.innerHeight * 0.95;
+            const baseWidth = 870;
+            const baseHeight = 1100;
+
+            let scaleX = targetWidth / baseWidth;
+            let scaleY = targetHeight / baseHeight;
+            let scale = Math.min(scaleX, scaleY);
+
+            if (scale > 1) scale = 1; // Sadece kucultmek maksadi
+
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', resizeGameboy);
+        window.addEventListener('load', resizeGameboy);
+        resizeGameboy(); // Baslangicta cagir
     </script>
 
     <script src="quiz.js"></script>

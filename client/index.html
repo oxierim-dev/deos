@@ -13,20 +13,47 @@
 <body>
     <audio id="bg-music" src="/public/şarkı.mp3" loop autoplay></audio>
 
-    <div id="landing-container">
-        <!-- Sunbeams / Pokemon style animated background via CSS -->
-        <div class="landing-content">
-            <h1 class="pokemon-title">DEOS TRIVIA QUIZ</h1>
-            <p class="subtitle">Otonom Araç Savaşlarına Hazır Mısın?</p>
+    <!-- GAMEBOY Casing Wrapper -->
+    <div id="gameboy-wrapper">
+        <div class="gameboy-top">
+            <div class="line"></div>
+            <div class="line"></div>
+        </div>
 
-            <div class="character-showcase">
-                <img src="/public/DEOS CAR NORMAL.png" alt="DEOS Car" class="showcase-car">
-                <img src="/public/anakarakter.png" alt="Trainer" class="showcase-trainer">
+        <div id="gameboy-screen-bezel">
+            <div class="screen-header">
+                <div class="battery-light"></div>
+                <span class="battery-text">BATTERY</span>
             </div>
 
-            <button onclick="window.location.href='/quiz'" class="start-btn">
-                MACERAYA BAŞLA! <span class="blink-arrow">▶</span>
-            </button>
+            <div id="landing-container">
+                <div class="landing-content">
+                    <h1 class="pokemon-title">DEOS TRIVIA QUIZ</h1>
+                    <p class="subtitle">Otonom Araç Savaşlarına Hazır Mısın?</p>
+
+                    <div class="character-showcase">
+                        <img src="/public/DEOS CAR NORMAL.png" alt="DEOS Car" class="showcase-car">
+                        <img src="/public/anakarakter.png" alt="Trainer" class="showcase-trainer">
+                    </div>
+
+                    <button onclick="window.location.href='/quiz'" class="start-btn">
+                        MACERAYA BAŞLA! <span class="blink-arrow">▶</span>
+                    </button>
+                    <div class="insert-coin-text">PRESS START</div>
+                </div>
+            </div>
+
+            <div class="screen-brand">DEOS BOY</div>
+        </div>
+
+        <div class="gameboy-controls">
+            <div class="d-pad"></div>
+            <div class="action-buttons-diamond">
+                <div class="play-btn btn-top btn-color-a" onclick="document.querySelector('.start-btn').click()">A</div>
+                <div class="play-btn btn-left btn-color-b">B</div>
+                <div class="play-btn btn-right btn-color-c">C</div>
+                <div class="play-btn btn-bottom btn-color-d">D</div>
+            </div>
         </div>
     </div>
 
@@ -45,15 +72,166 @@
             overflow: hidden;
         }
 
+        /* GAMEBOY WRAPPER */
+        #gameboy-wrapper {
+            background-color: #dfdfdf;
+            padding: 30px;
+            border-radius: 20px 20px 50px 20px;
+            box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.2), 0 20px 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #a0a0a0;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transform-origin: top center;
+        }
+
+        .gameboy-top {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .gameboy-top .line {
+            height: 3px;
+            background-color: #c0c0c0;
+            margin-top: 5px;
+            border-bottom: 1px solid #fff;
+        }
+
+        #gameboy-screen-bezel {
+            background-color: #555;
+            padding: 30px;
+            border-radius: 15px 15px 40px 15px;
+            box-shadow: inset 5px 5px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .battery-light {
+            width: 12px;
+            height: 12px;
+            background-color: #ff3333;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #ff3333, inset 2px 2px 5px rgba(255, 255, 255, 0.5);
+            margin-right: 10px;
+        }
+
+        .battery-text {
+            font-size: 10px;
+            color: #a0a0a0;
+            letter-spacing: 2px;
+        }
+
+        .screen-brand {
+            font-size: 14px;
+            color: #a0a0a0;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            font-style: italic;
+            font-family: sans-serif;
+            letter-spacing: 3px;
+        }
+
+        .gameboy-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 40px;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+
+        .d-pad {
+            width: 120px;
+            height: 120px;
+            background: #333;
+            clip-path: polygon(33% 0%, 66% 0%, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 33% 100%, 33% 66%, 0% 66%, 0% 33%, 33% 33%);
+            box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.2);
+        }
+
+        .action-buttons-diamond {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #dfdfdf;
+            font-size: 16px;
+            box-shadow: 2px 4px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(0, 0, 0, 0.5);
+            font-family: 'Press Start 2P', cursive;
+            position: absolute;
+            cursor: pointer;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-top {
+            top: 0;
+            left: 45px;
+        }
+
+        .btn-bottom {
+            bottom: 0;
+            left: 45px;
+        }
+
+        .btn-left {
+            top: 45px;
+            left: 0;
+        }
+
+        .btn-right {
+            top: 45px;
+            right: 0;
+        }
+
+        .btn-color-a {
+            background-color: #d12020;
+        }
+
+        .btn-color-b {
+            background-color: #2050d1;
+        }
+
+        .btn-color-c {
+            background-color: #8b20d1;
+        }
+
+        .btn-color-d {
+            background-color: #222222;
+        }
+
         #landing-container {
             width: 800px;
             height: 600px;
             background: linear-gradient(to bottom, #7db983 0%, #a2d2a6 100%);
-            border: 4px solid #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            border: none;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .landing-content {
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -136,6 +314,13 @@
             animation: blinker 1s linear infinite;
         }
 
+        .insert-coin-text {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #555;
+            animation: blinker 2s linear infinite;
+        }
+
         @keyframes blinker {
             50% {
                 opacity: 0;
@@ -144,13 +329,37 @@
     </style>
 
     <script>
-        // Otomatik müzik çalma denemesi. Kullanıcı siteye tıklarsa tetiklenmesi için:
+        // Otomatik müzik çalma (etkileşimle tetiklenir)
         document.body.addEventListener('click', () => {
             const bgm = document.getElementById('bg-music');
-            if (bgm.paused) {
+            if (bgm && bgm.paused) {
                 bgm.play().catch(e => console.log('Autoplay engellendi:', e));
             }
         }, { once: true });
+
+        // Responsive Dikey Ekran Ölçekleme (iOS & Android tam uyum için)
+        function resizeGameboy() {
+            const wrapper = document.getElementById('gameboy-wrapper');
+            if (!wrapper) return;
+            // 90% genislik payi (sag-sol ekran bosluk)
+            const targetWidth = window.innerWidth * 0.90;
+            const targetHeight = window.innerHeight * 0.95;
+            // Gameboy wrapper standart ortalama genisligi 864px (~800 ic + border/padding) ve yuksekligi ~1000px
+            const baseWidth = 870;
+            const baseHeight = 1100;
+
+            let scaleX = targetWidth / baseWidth;
+            let scaleY = targetHeight / baseHeight;
+            let scale = Math.min(scaleX, scaleY);
+
+            if (scale > 1) scale = 1; // Sadece kucultmek maksadi (buyutme yapma)
+
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', resizeGameboy);
+        window.addEventListener('load', resizeGameboy);
+        resizeGameboy(); // Baslangicta cagir
     </script>
 </body>
 
