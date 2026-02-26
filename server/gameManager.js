@@ -1,18 +1,19 @@
 const AntiCheat = require('./antiCheat');
 
 class Player {
-  constructor(id, name) {
+  constructor(id, name, playerCount = 0) {
     this.id = id;
     this.name = name || `Player ${id.substr(0, 6)}`;
-    this.color = this.generateColor();
+    this.color = this.generateColor(playerCount);
     this.position = 0;
     this.ready = false;
     this.antiCheat = new AntiCheat();
   }
 
-  generateColor() {
+  generateColor(playerCount) {
     const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00'];
-    return colors[Math.floor(Math.random() * colors.length)];
+    // Odaya giren kacinci oyuncu ise o rengi alir (0, 1, 2, 3), cakisma yasanmaz
+    return colors[playerCount % colors.length];
   }
 
   reset() {
@@ -125,7 +126,9 @@ class GameManager {
   }
 
   addPlayer(playerId, name) {
-    const player = new Player(playerId, name);
+    // Oyuncunun odada alacagi mutlak sayiyi hesapla, oyuna giren kacinci kisi
+    const playerCount = this.players.size;
+    const player = new Player(playerId, name, playerCount);
     this.players.set(playerId, player);
     return player;
   }

@@ -61,18 +61,8 @@ io.on('connection', (socket) => {
       maxPlayers: room.maxPlayers
     });
 
-    if (room.isFull()) {
-      io.to(room.id).emit('all_ready', {
-        countdown: 3
-      });
-      
-      // 3 saniye sonra yarışı otomatik başlat
-      setTimeout(() => {
-        if (room.gameState !== 'racing') {
-          startRace(room);
-        }
-      }, 3000);
-    }
+    // if (room.isFull()) blokunu sildik.
+    // Otomatik başlama hatasını kaldırdık. Sadece oyuncular "HAZIR" dediğinde oyun başlayacak.
   });
 
   socket.on('player_ready', () => {
