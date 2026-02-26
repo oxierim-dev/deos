@@ -111,9 +111,48 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('use_nitro', () => {
+    const room = gameManager.getRoomByPlayerId(socket.id);
+    if (room && room.gameState === 'racing') {
+      const player = room.getPlayer(socket.id);
+      if (player) {
+        player.position += 100; // Nitro gücü
+        
+        if (player.position >= 1000) {
+          finishRace(room, socket.id);
+        } else {
+          io.to(room.id).emit('positions', room.getPositions());
+        }
+      }
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('Oyuncu ayrıldı:', socket.id);
+    const room = gameManager.getRoomByPlayerId(socket.id);
     gameManager.removePlayer(socket.id);
+    
+    // Auto-win ve otomatik reset kontrolleri
+    if (room) {
+      if (room.players.length === 0) {
+        console.log(`Oda ${room.id} tamamen boşaldı, resetleniyor.`);
+        gameManager.resetRoom(room.id);
+      } else if (room.gameState === 'racing' && room.players.length === 1) {
+        console.log(`Oda ${room.id}'de tek oyuncu kaldı, otomatik kazanıyor.`);
+        // Son kalan oyuncu kazanır
+        const winner = room.players[0];
+        winner.position = 1000; // çizgiyi geçmiş gibi göster
+        finishRace(room, winner.id);
+      } else if (room.gameState === 'waiting') {
+        // Bekleme modundaysa, lobiyi diğer oyuncular için güncelle
+        io.to(room.id).emit('lobby_update', {
+          roomId: room.id,
+          players: room.getPlayers(),
+          playerCount: room.players.length,
+          maxPlayers: room.maxPlayers
+        });
+      }
+    }
   });
 });
 

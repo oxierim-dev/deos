@@ -18,23 +18,6 @@ carImage.src = 'car_optimized.png';
 
 // Araba çizimi (Image)
 function drawPixelCar(ctx, x, y, color, scale = 1) {
-    // Aura / Seçim halkası (Arabanın kime ait olduğunu belli etmek için)
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = color;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(30, 15, 55, 20, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Altındaki zemini hafif boyayalım
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.3;
-    ctx.fill();
-    ctx.restore();
-
     ctx.save();
     ctx.translate(x, y);
     // Arabayı yeni boyutuyla çiziyoruz (Genişlik: 100, Yükseklik: 45)

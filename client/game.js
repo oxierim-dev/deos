@@ -6,6 +6,11 @@ let myPlayerId = null;
 let racePositions = [];
 let countdownInterval = null;
 
+// Nitro sistemi değişkenleri
+let nitroCharge = 0;
+let isNitroActive = false;
+let lastClickTime = 0;
+
 // Sayfa yüklendiğinde başlat
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
@@ -122,7 +127,7 @@ function updateLobbyUI(data) {
     }
     
     // Oyuncu slotlarını güncelle
-    updatePlayerSlots(data.players);
+    updatePlayerSlots(data.players, data.maxPlayers);
     
     // Hazır butonunu kontrol et
     const readyBtn = document.getElementById('readyBtn');
@@ -139,12 +144,20 @@ function updateLobbyUI(data) {
     }
 }
 
-function updatePlayerSlots(players) {
+function updatePlayerSlots(players, maxPlayers = 4) {
     for (let i = 1; i <= 4; i++) {
         const playerSlot = document.getElementById(`player${i}`);
         const player = players[i - 1];
         
         if (playerSlot) {
+            // Eğer mod 2 kişilikse ve bu 3. veya 4. slotsa gizle
+            if (i > maxPlayers) {
+                playerSlot.style.display = 'none';
+                continue;
+            } else {
+                playerSlot.style.display = 'flex';
+            }
+
             if (player) {
                 playerSlot.classList.add('active');
                 
@@ -261,13 +274,31 @@ function startRace(countdown) {
 }
 
 function handleClick(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     
     // Sadece yarış durumunda tıklamaları gönder
     if (gameState === 'racing') {
-        console.log('Tıklama gönderiliyor');
-        gameSocket.emit('click');
-        
+        if (!isNitroActive) {
+            gameSocket.emit('click');
+            
+            // Nitro Şarj Mantığı
+            const now = Date.now();
+            if (lastClickTime > 0 && (now - lastClickTime) < 200) { // Hızlı tıklama var (saniyede 5+ tık)
+                nitroCharge += 5; // her hızlı tıkta %5 dolsun
+            } else {
+                // Yavaşladıysa nitro barı yavaşça düşebilir ama şimdilik tutalım ya da az düşürelim
+                nitroCharge -= 1; 
+            }
+            
+            if (nitroCharge < 0) nitroCharge = 0;
+            if (nitroCharge >= 100) {
+                activateNitro();
+            }
+            
+            updateNitroUI();
+            lastClickTime = now;
+        }
+
         // Buton animasyonu
         const clickBtn = document.getElementById('clickBtn');
         if (clickBtn) {
@@ -280,6 +311,45 @@ function handleClick(event) {
         // Haptic feedback (mobil için)
         if (navigator.vibrate) {
             navigator.vibrate(50);
+        }
+    }
+}
+
+function activateNitro() {
+    isNitroActive = true;
+    nitroCharge = 100;
+    
+    // Nitro efekti (sarsıntı)
+    const raceContainer = document.querySelector('.race-track');
+    if (raceContainer) raceContainer.classList.add('nitro-shake');
+    
+    // Sunucuya nitro kullanıldığını bildir
+    gameSocket.emit('use_nitro');
+    
+    // Nitro çubuğunu yavaş yavaş boşalt
+    const nitroInterval = setInterval(() => {
+        nitroCharge -= 10;
+        updateNitroUI();
+        
+        if (nitroCharge <= 0) {
+            clearInterval(nitroInterval);
+            isNitroActive = false;
+            nitroCharge = 0;
+            if (raceContainer) raceContainer.classList.remove('nitro-shake');
+        }
+    }, 100); // 1 saniyede biter
+}
+
+function updateNitroUI() {
+    const nitroFill = document.getElementById('nitroFill');
+    if (nitroFill) {
+        nitroFill.style.height = nitroCharge + '%';
+        if (isNitroActive) {
+            nitroFill.style.background = '#00ffff'; // Nitro rengi
+            nitroFill.style.boxShadow = '0 0 20px #00ffff';
+        } else {
+            nitroFill.style.background = '#ff00ff';
+            nitroFill.style.boxShadow = 'none';
         }
     }
 }
