@@ -603,9 +603,36 @@ body {
         font-size: 2.5rem;
     }
 
-    .click-button {
+    .race-controls {
+        flex-direction: column-reverse; /* Tıkla butonu üstte/altta kalma durumunu ayarlar */
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .nitro-container {
+        margin-right: 0;
+        margin-bottom: 0;
+        flex-direction: row; /* Barları yatayda dizmek için */
+        align-items: center;
+        gap: 15px;
+    }
+
+    .nitro-bar {
         width: 150px;
-        height: 150px;
+        height: 30px;
+        margin-bottom: 0;
+    }
+
+    .nitro-fill {
+        width: 0%;
+        height: 100%;
+        transition: width 0.1s linear, background 0.3s ease;
+    }
+
+    .click-button {
+        width: 130px;
+        height: 130px;
     }
 
     .players-grid {
@@ -626,3 +653,4 @@ body {
         min-width: auto;
     }
 }
+```

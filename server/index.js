@@ -63,15 +63,15 @@ io.on('connection', (socket) => {
 
     if (room.isFull()) {
       io.to(room.id).emit('all_ready', {
-        countdown: 5
+        countdown: 3
       });
       
-      // 5 saniye sonra yarışı otomatik başlat
+      // 3 saniye sonra yarışı otomatik başlat
       setTimeout(() => {
         if (room.gameState !== 'racing') {
           startRace(room);
         }
-      }, 5000);
+      }, 3000);
     }
   });
 

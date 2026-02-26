@@ -14,7 +14,15 @@ let particles = [];
 
 // Araba görseli
 const carImage = new Image();
-carImage.src = 'car_optimized.png';
+carImage.src = '/car_optimized.png';
+
+// Resim yüklendiğinde canvas'ı güncellemesini zorlamak için ufak destek
+carImage.onload = () => {
+    console.log("Araba resmi başarıyla yüklendi.");
+};
+carImage.onerror = () => {
+    console.error("Araba resmi yüklenemedi! Dosya yolunu kontrol edin.");
+};
 
 // Araba çizimi (Image)
 function drawPixelCar(ctx, x, y, color, scale = 1) {
