@@ -61,7 +61,7 @@ function typeWriterEffect(text, callback) {
             isTyping = false;
             if (callback) callback();
         }
-    }, 30); // Daktilo hızı
+    }, 80); // Daktilo hızı yavaşlatıldı (30'dan 80'e çıkarıldı)
 }
 
 function showNextQuestion() {

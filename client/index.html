@@ -1,110 +1,304 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEOS RACING SIMULATOR</title>
-    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div id="landing-container">
-        <!-- Sunbeams / Pokemon style animated background via CSS -->
-        <div class="landing-content">
-            <h1 class="pokemon-title">DEOS TRIVIA QUIZ</h1>
-            <p class="subtitle">Otonom Araç Savaşlarına Hazır Mısın?</p>
-            
-            <div class="character-showcase">
-                <img src="/public/DEOS CAR NORMAL.png" alt="DEOS Car" class="showcase-car">
-                <img src="/public/anakarakter.png" alt="Trainer" class="showcase-trainer">
-            </div>
 
-            <button onclick="window.location.href='/quiz'" class="start-btn">
-                MACERAYA BAŞLA! <span class="blink-arrow">▶</span>
-            </button>
+<body>
+    <div id="nds-wrapper">
+        <!-- Left Controls (D-Pad) -->
+        <div class="nds-side-panel">
+            <div class="d-pad-container">
+                <div class="d-pad"></div>
+            </div>
+            <div class="speaker-grill">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <!-- Center Screen -->
+        <div class="nds-center">
+            <div class="nds-screen-bezel">
+                <div class="landing-content">
+                    <h1 class="pokemon-title">DEOS TRIVIA QUIZ</h1>
+                    <p class="subtitle">Otonom Araç Savaşlarına Hazır Mısın?</p>
+
+                    <div class="character-showcase">
+                        <img src="/public/DEOS CAR NORMAL.png" alt="DEOS Car" class="showcase-car">
+                        <img src="/public/anakarakter.png" alt="Trainer" class="showcase-trainer">
+                    </div>
+
+                    <button onclick="window.location.href='/quiz'" class="start-btn">
+                        MACERAYA BAŞLA! <span class="blink-arrow">▶</span>
+                    </button>
+                    <div class="insert-coin-text">PRESS START</div>
+                </div>
+            </div>
+            <div class="nds-hinge"></div>
+        </div>
+
+        <!-- Right Controls (Action Buttons) -->
+        <div class="nds-side-panel right-panel">
+            <div class="action-buttons-container">
+                <div class="btn-group">
+                    <div class="btn-xy">X</div>
+                    <div class="btn-xy" style="margin-top: 40px; margin-left: -20px;">Y</div>
+                    <div class="btn-ab" style="position: absolute; top: 10px; right: 10px;">A</div>
+                    <div class="btn-ab" style="position: absolute; bottom: -20px; right: 30px;">B</div>
+                </div>
+            </div>
+            <div class="speaker-grill">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
         </div>
     </div>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
         body {
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             background: #2b2b2b;
             font-family: 'Press Start 2P', cursive;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
         }
-        #landing-container {
-            width: 800px; height: 600px;
+
+        /* NDS Wrapper */
+        #nds-wrapper {
+            display: flex;
+            align-items: stretch;
+            background-color: #dfdfdf;
+            padding: 30px;
+            border-radius: 40px;
+            box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.2), 0 20px 40px rgba(0, 0, 0, 0.8);
+            border: 2px solid #a0a0a0;
+            transform: scale(0.85);
+            /* Ekrana sığması için */
+        }
+
+        /* Side Panels */
+        .nds-side-panel {
+            width: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 0;
+        }
+
+        /* Controls */
+        .d-pad-container {
+            margin-top: 100px;
+        }
+
+        .d-pad {
+            width: 100px;
+            height: 100px;
+            background: #333;
+            clip-path: polygon(33% 0%, 66% 0%, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 33% 100%, 33% 66%, 0% 66%, 0% 33%, 33% 33%);
+            box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.2);
+        }
+
+        .action-buttons-container {
+            margin-top: 80px;
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .btn-xy,
+        .btn-ab {
+            width: 35px;
+            height: 35px;
+            background-color: #555;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ccc;
+            font-size: 12px;
+            font-family: sans-serif;
+            box-shadow: 2px 4px 5px rgba(0, 0, 0, 0.3), inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+            position: absolute;
+        }
+
+        .btn-xy {
+            background-color: #444;
+        }
+
+        .btn-ab {
+            background-color: #b00040;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Speaker Grills */
+        .speaker-grill {
+            display: grid;
+            grid-template-columns: repeat(3, 10px);
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #555;
+            border-radius: 50%;
+            box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Center Screen */
+        .nds-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 20px;
+        }
+
+        .nds-hinge {
+            width: 90%;
+            height: 15px;
+            background: linear-gradient(to right, #b0b0b0, #dfdfdf, #b0b0b0);
+            border-radius: 20px;
+            margin-top: -8px;
+            z-index: 10;
+        }
+
+        .nds-screen-bezel {
+            background-color: #111;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: inset 5px 5px 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .landing-content {
+            width: 600px;
+            height: 450px;
             background: linear-gradient(to bottom, #7db983 0%, #a2d2a6 100%);
-            border: 4px solid #fff; border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            position: relative; overflow: hidden;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 2px solid #555;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
+
         .pokemon-title {
             color: #ffde00;
             text-shadow: 4px 4px 0 #3b4cca, -2px -2px 0 #3b4cca, 2px -2px 0 #3b4cca, -2px 2px 0 #3b4cca, 2px 2px 0 #3b4cca;
-            font-size: 36px;
+            font-size: 32px;
             text-align: center;
             margin-bottom: 20px;
-            z-index: 2; position: relative;
         }
+
         .subtitle {
             color: #fff;
             text-shadow: 2px 2px 0 #000;
             font-size: 12px;
             text-align: center;
             margin-bottom: 40px;
-            z-index: 2; position: relative;
         }
+
         .character-showcase {
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            gap: 20px;
-            margin-bottom: 50px;
-            height: 200px;
+            gap: 40px;
+            margin-bottom: 40px;
+            height: 180px;
         }
+
         .showcase-car {
-            width: 250px;
+            width: 220px;
             transform: scaleX(-1);
-            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.4));
             animation: float 2s infinite ease-in-out;
         }
+
         .showcase-trainer {
-            width: 150px;
-            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.4));
+            width: 140px;
+            filter: drop-shadow(0 10px 5px rgba(0, 0, 0, 0.4));
         }
+
         @keyframes float {
-            0%, 100% { transform: scaleX(-1) translateY(0); }
-            50% { transform: scaleX(-1) translateY(-10px); }
+
+            0%,
+            100% {
+                transform: scaleX(-1) translateY(0);
+            }
+
+            50% {
+                transform: scaleX(-1) translateY(-10px);
+            }
         }
+
         .start-btn {
             background-color: #f8f8f8;
             border: 6px solid #505050;
             border-radius: 12px;
             font-family: 'Press Start 2P', cursive;
-            font-size: 18px; color: #303030;
-            padding: 20px 30px;
+            font-size: 16px;
+            color: #303030;
+            padding: 15px 25px;
             cursor: pointer;
-            box-shadow: inset 0 0 0 4px #d0d0c8, 0 6px 0 rgba(0,0,0,0.4);
+            box-shadow: inset 0 0 0 4px #d0d0c8, 0 6px 0 rgba(0, 0, 0, 0.4);
             transition: transform 0.1s;
+            z-index: 10;
         }
+
         .start-btn:active {
             transform: translateY(4px);
-            box-shadow: inset 0 0 0 4px #d0d0c8, 0 2px 0 rgba(0,0,0,0.4);
+            box-shadow: inset 0 0 0 4px #d0d0c8, 0 2px 0 rgba(0, 0, 0, 0.4);
         }
+
         .blink-arrow {
             color: #e02020;
             animation: blinker 1s linear infinite;
         }
+
+        .insert-coin-text {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #555;
+            animation: blinker 2s linear infinite;
+        }
+
         @keyframes blinker {
-            50% { opacity: 0; }
+            50% {
+                opacity: 0;
+            }
         }
     </style>
-    
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="lobby.js?v=1.1"></script>
 </body>
+
 </html>
