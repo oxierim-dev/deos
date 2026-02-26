@@ -430,10 +430,12 @@ body {
 .race-controls {
     text-align: center;
     width: 100%;
+    max-width: 800px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: flex-end;
-    gap: 50px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 /* Nitro Bar Styles */
@@ -520,16 +522,16 @@ body {
     background: radial-gradient(circle, #aa0000 0%, #ff5555 100%);
 }
 
-.shield-button {
+.powerup-button {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, #55ffff 0%, #00aaaa 100%);
-    border: 4px solid #ccffff;
-    color: #000;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-    transition: transform 0.1s, opacity 0.3s;
+    background: radial-gradient(circle, #555555 0%, #333333 100%);
+    border: 4px solid #777777;
+    color: #fff;
+    cursor: not-allowed;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    transition: transform 0.1s, background 0.3s, box-shadow 0.3s, border-color 0.3s;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -537,16 +539,20 @@ body {
     outline: none;
     user-select: none;
     font-weight: bold;
+    opacity: 0.6;
 }
 
-.shield-button:active:not(:disabled) {
+.powerup-button.active {
+    background: radial-gradient(circle, #ffff55 0%, #aaaa00 100%);
+    border: 4px solid #ffffaa;
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(255, 255, 0, 0.8);
+    opacity: 1;
+}
+
+.powerup-button.active:active {
     transform: scale(0.9);
-}
-
-.shield-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    filter: grayscale(100%);
 }
 
 .btn-main-text {

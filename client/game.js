@@ -11,6 +11,16 @@ let nitroCharge = 0;
 let isNitroActive = false;
 let lastClickTime = 0;
 
+// Hareket kontrol değişkenleri
+let inputState = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+};
+let moveInterval = null;
+let currentPowerup = null;
+
 // Sayfa yüklendiğinde başlat
 document.addEventListener('DOMContentLoaded', function() {
     initializeGame();
@@ -78,57 +88,103 @@ function initializeGame() {
 function setupEventListeners() {
     // Hazır butonunu dinle
     const readyBtn = document.getElementById('readyBtn');
-    if (readyBtn) {
-        readyBtn.addEventListener('click', setPlayerReady);
-    }
+    if (readyBtn) readyBtn.addEventListener('click', setPlayerReady);
     
     // Tıklama butonunu dinle (ATEŞ ET)
     const clickBtn = document.getElementById('clickBtn');
     if (clickBtn) {
-        clickBtn.addEventListener('click', handleClick);
-        clickBtn.addEventListener('touchstart', handleClick); // Mobil desteği
+        clickBtn.addEventListener('click', () => handleClick(null));
+        clickBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleClick(null); });
     }
 
-    // Kalkan butonunu dinle
-    const shieldBtn = document.getElementById('shieldBtn');
-    if (shieldBtn) {
-        shieldBtn.addEventListener('click', activateShield);
-        shieldBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activateShield(); });
+    // Özel Güç butonunu dinle
+    const powerupBtn = document.getElementById('powerupBtn');
+    if (powerupBtn) {
+        powerupBtn.addEventListener('click', activatePowerup);
+        powerupBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activatePowerup(); });
     }
     
     // Tekrar oyna butonunu dinle
     const playAgainBtn = document.getElementById('playAgainBtn');
-    if (playAgainBtn) {
-        playAgainBtn.addEventListener('click', playAgain);
-    }
+    if (playAgainBtn) playAgainBtn.addEventListener('click', playAgain);
     
-    // Klavye desteği (Space tuşu ateş, Shift kalkan)
+    // Klavye desteği (WASD Hareket, Space Ateş, Shift Özel Güç)
     document.addEventListener('keydown', function(event) {
-        if (event.code === 'Space' && gameState === 'racing') {
+        if (gameState !== 'racing') return;
+        
+        // Hareket Tuşları
+        if (event.code === 'KeyW' || event.code === 'ArrowUp') inputState.up = true;
+        if (event.code === 'KeyS' || event.code === 'ArrowDown') inputState.down = true;
+        if (event.code === 'KeyA' || event.code === 'ArrowLeft') inputState.left = true;
+        if (event.code === 'KeyD' || event.code === 'ArrowRight') inputState.right = true;
+
+        // Aksiyon Tuşları
+        if (event.code === 'Space') {
             event.preventDefault();
             handleClick(event);
         }
-        if (event.code === 'ShiftLeft' && gameState === 'racing') {
+        if (event.code === 'ShiftLeft') {
             event.preventDefault();
-            activateShield();
+            activatePowerup();
         }
+    });
+
+    document.addEventListener('keyup', function(event) {
+        if (event.code === 'KeyW' || event.code === 'ArrowUp') inputState.up = false;
+        if (event.code === 'KeyS' || event.code === 'ArrowDown') inputState.down = false;
+        if (event.code === 'KeyA' || event.code === 'ArrowLeft') inputState.left = false;
+        if (event.code === 'KeyD' || event.code === 'ArrowRight') inputState.right = false;
     });
 }
 
-function activateShield() {
-    if (gameState === 'racing') {
-        const shieldBtn = document.getElementById('shieldBtn');
-        if (shieldBtn && !shieldBtn.disabled) {
-            gameSocket.emit('shield');
+function startMovementLoop() {
+    if (moveInterval) clearInterval(moveInterval);
+    
+    // Server'a her 50ms'de (20 FPS) bir yön belirt
+    moveInterval = setInterval(() => {
+        if (gameState === 'racing') {
+            let dx = 0;
+            let dy = 0;
             
-            // 10 saniye bekleme süresi (Cooldown)
-            shieldBtn.disabled = true;
-            shieldBtn.innerHTML = '<span class="btn-sub-text">BEKLE</span>';
+            if (inputState.up) dy -= 1;
+            if (inputState.down) dy += 1;
+            if (inputState.left) dx -= 1;
+            if (inputState.right) dx += 1;
             
-            setTimeout(() => {
-                shieldBtn.disabled = false;
-                shieldBtn.innerHTML = '<span class="btn-sub-text">KALKAN</span>';
-            }, 10000);
+            if (dx !== 0 || dy !== 0) {
+                gameSocket.emit('move', { dx: dx, dy: dy });
+            }
+        }
+    }, 50);
+}
+
+function activatePowerup() {
+    if (gameState === 'racing' && currentPowerup) {
+        gameSocket.emit('use_powerup');
+        // İkonu boşalt, sunucudan teyit beklemeye gerek yok hissttirmek için
+        currentPowerup = null;
+        updatePowerupUI();
+    }
+}
+
+function updatePowerupUI() {
+    const powerupBtn = document.getElementById('powerupBtn');
+    const powerupIcon = document.getElementById('powerupIcon');
+    
+    if (powerupBtn && powerupIcon) {
+        if (currentPowerup) {
+            powerupBtn.disabled = false;
+            powerupBtn.classList.add('active');
+            
+            // Güç ismine göre ikon ver
+            if (currentPowerup === 'heal') powerupIcon.innerHTML = 'CAN (++hp)';
+            else if (currentPowerup === 'tripleshot') powerupIcon.innerHTML = '3\'LÜ<br>ATIŞ';
+            else if (currentPowerup === 'wallbreaker') powerupIcon.innerHTML = 'DUVAR<br>DELİCİ';
+            else powerupIcon.innerHTML = currentPowerup.toUpperCase();
+        } else {
+            powerupBtn.disabled = true;
+            powerupBtn.classList.remove('active');
+            powerupIcon.innerHTML = 'BOŞ<br>SLOT';
         }
     }
 }
@@ -295,6 +351,9 @@ function startRace(countdown) {
         initRaceCanvas();
     }
     
+    // Hareket döngüsünü başlat
+    startMovementLoop();
+    
     // Tıklama butonuna focus
     const clickBtn = document.getElementById('clickBtn');
     if (clickBtn) {
@@ -379,11 +438,20 @@ function updateMissileUI() {
 }
 
 function updateCombatDisplay(data) {
+    // Kendi powerup durumumuzu kontrol et ve UI'yı güncelle
+    const myPosition = data.players.find(p => p.id === myPlayerId);
+    if (myPosition && myPosition.powerup !== currentPowerup) {
+        currentPowerup = myPosition.powerup;
+        updatePowerupUI();
+    }
+
     // Renderer'a hem oyuncuları hem mermileri yolla
     if (typeof updateCanvasPositions === 'function') {
         updateCanvasPositions({
             players: data.players,
-            projectiles: data.projectiles
+            projectiles: data.projectiles,
+            obstacles: data.obstacles,
+            powerups: data.powerups
         });
     }
     

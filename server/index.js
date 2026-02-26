@@ -97,16 +97,90 @@ io.on('connection', (socket) => {
     const room = gameManager.getRoomByPlayerId(socket.id);
     if (room && room.gameState === 'racing') {
       const player = room.getPlayer(socket.id);
-      if (player && room.antiCheat.validateClick(socket.id)) {
-        // Yeni bir mermi ateşle, rakip takıma doğru
+  socket.on('move', (data) => {
+    const room = gameManager.getRoomByPlayerId(socket.id);
+    if (room && room.gameState === 'racing') {
+        const player = room.getPlayer(socket.id);
+        if (player && player.hp > 0) {
+            // İstemciden gelen dx, dy (1, 0, -1) değerleri
+            const speed = 5; // Araç hareket hızı
+            let nx = player.x + (data.dx * speed);
+            let ny = player.y + (data.dy * speed);
+            
+            // Sınır kontrolleri (800x400)
+            if (ny < 20) ny = 20;
+            if (ny > 380) ny = 380;
+            
+            // Takım sınırı (Orta çizgiyi geçemezler)
+            if (player.team === 1) {
+                if (nx < 20) nx = 20;
+                if (nx > 380) nx = 380; // Sol tarafın maksimumu
+            } else {
+                if (nx < 420) nx = 420; // Sağ tarafın minimumu
+                if (nx > 780) nx = 780;
+            }
+
+            // Kutu/Siper çarpışma kontrolü (AABB)
+            let canMove = true;
+            for (let obs of room.obstacles) {
+                if (obs.hp > 0 &&
+                    nx < obs.x + obs.width &&
+                    nx + player.width > obs.x &&
+                    ny < obs.y + obs.height &&
+                    ny + player.height > obs.y) {
+                    canMove = false;
+                    break;
+                }
+            }
+
+            if (canMove) {
+                player.x = nx;
+                player.y = ny;
+            }
+        }
+    }
+  });
+
+  socket.on('shoot', () => {
+    const room = gameManager.getRoomByPlayerId(socket.id);
+    if (room && room.gameState === 'racing') {
+      const player = room.getPlayer(socket.id);
+      if (player && player.hp > 0 && room.antiCheat.validateClick(socket.id)) {
+        
+        let projX = player.team === 1 ? player.x + 50 : player.x - 50;
+        let projVx = player.team === 1 ? 15 : -15;
+
+        // "3'lü atış" powerup kontrolü
+        let isTriple = (player.powerup === 'tripleshot');
+        
+        // Merkez mermi
         room.projectiles.push({
           type: 'bullet',
           ownerId: player.id,
           team: player.team,
-          damage: Math.floor(Math.random() * 2) + 1, // 1 veya 2 hasar
-          progress: 0, // 0'dan 100'e kadar karşıya gidecek
-          speed: 15
+          damage: Math.floor(Math.random() * 2) + 1,
+          x: projX,
+          y: player.y + 15,
+          vx: projVx,
+          vy: 0,
+          width: 20,
+          height: 4
         });
+
+        if (isTriple) {
+            // Yukarı Giden
+            room.projectiles.push({
+                type: 'bullet', ownerId: player.id, team: player.team, damage: 1,
+                x: projX, y: player.y + 15, vx: projVx, vy: -2, width: 20, height: 4
+            });
+            // Aşağı Giden
+            room.projectiles.push({
+                type: 'bullet', ownerId: player.id, team: player.team, damage: 1,
+                x: projX, y: player.y + 15, vx: projVx, vy: 2, width: 20, height: 4
+            });
+            // Powerupı tüket (tek kullanımlık veya süreli olabilir, burada tek atışlık tüketelim)
+            player.powerup = null;
+        }
       }
     }
   });
@@ -115,26 +189,56 @@ io.on('connection', (socket) => {
     const room = gameManager.getRoomByPlayerId(socket.id);
     if (room && room.gameState === 'racing') {
       const player = room.getPlayer(socket.id);
-      if (player) {
+      if (player && player.hp > 0) {
+         let projX = player.team === 1 ? player.x + 50 : player.x - 50;
+         let projVx = player.team === 1 ? 8 : -8;
+
          room.projectiles.push({
           type: 'missile',
           ownerId: player.id,
           team: player.team,
-          damage: 25, // Büyük hasar
-          progress: 0,
-          speed: 5
+          damage: 30, // Büyük hasar
+          x: projX,
+          y: player.y + 10,
+          vx: projVx,
+          vy: 0,
+          width: 30,
+          height: 16
         });
       }
     }
   });
 
-  socket.on('shield', () => {
+  // Eski shield kapatıldı, powerup tetikleme (ÖZEL GÜÇ) slotu eklendi
+  socket.on('use_powerup', () => {
      const room = gameManager.getRoomByPlayerId(socket.id);
      if (room && room.gameState === 'racing') {
         const player = room.getPlayer(socket.id);
-        if (player) {
-           // 2 saniye kalkan, cooldown client'ta tutulsun
-           player.shieldEndTime = Date.now() + 2000;
+        if (player && player.powerup) {
+           // Yetenekleri uygula
+           if (player.powerup === 'heal') {
+               player.hp = Math.min(100, player.hp + 30);
+               player.powerup = null;
+           } else if (player.powerup === 'tripleshot') {
+               // Bir sonraki atışta `shoot` eventinde tüketilecek, sadece ui'da yandığını bilelim
+           } else if (player.powerup === 'wallbreaker') {
+               // Çılgın bir füze at
+               let projX = player.team === 1 ? player.x + 50 : player.x - 50;
+               let projVx = player.team === 1 ? 12 : -12;
+               room.projectiles.push({
+                  type: 'wallbreaker',
+                  ownerId: player.id,
+                  team: player.team,
+                  damage: 50, // Siperleri tekte yıkar
+                  x: projX,
+                  y: player.y,
+                  vx: projVx,
+                  vy: 0,
+                  width: 40,
+                  height: 30
+               });
+               player.powerup = null;
+           }
         }
      }
   });
@@ -202,30 +306,93 @@ setInterval(() => {
     if (room.gameState === 'racing') {
       let stateChanged = false;
       
-      // Mermileri hareket ettir
+      // Powerup Spawn Mantığı (Her 8 saniyede bir düşsün)
+      const now = Date.now();
+      if (now - room.lastPowerupSpawn > 8000) {
+          if (room.powerups.length < 3) {
+              const types = ['heal', 'tripleshot', 'wallbreaker'];
+              const pType = types[Math.floor(Math.random() * types.length)];
+              // Haritada rastgele yere düşsün
+              room.powerups.push({
+                  id: Math.random().toString(),
+                  type: pType,
+                  x: 50 + Math.random() * 700,
+                  y: 50 + Math.random() * 300,
+                  width: 30,
+                  height: 30
+              });
+          }
+          room.lastPowerupSpawn = now;
+      }
+
+      // Oyuncuların güçleri alması (Collision Array Iteration)
+      for (const player of room.players) {
+          if (player.hp > 0 && !player.powerup) {
+              for (let i = room.powerups.length - 1; i >= 0; i--) {
+                  let pu = room.powerups[i];
+                  if (player.x < pu.x + pu.width &&
+                      player.x + player.width > pu.x &&
+                      player.y < pu.y + pu.height &&
+                      player.y + player.height > pu.y) {
+                      player.powerup = pu.type;
+                      room.powerups.splice(i, 1);
+                  }
+              }
+          }
+      }
+
+      // Mermileri hareket ettir ve çarpışmaları kontrol et
       for (let i = room.projectiles.length - 1; i >= 0; i--) {
         let proj = room.projectiles[i];
-        proj.progress += proj.speed; // 0'dan 100'e gidiyor (Karşı tarafa)
-        stateChanged = true;
+        proj.x += proj.vx;
+        proj.y += proj.vy;
         
-        // Mermi karşıya ulaştı
-        if (proj.progress >= 100) {
-          // Rakip takımı bul
-          const targetTeam = proj.team === 1 ? 2 : 1;
-          const enemies = room.players.filter(p => p.team === targetTeam && p.hp > 0);
-          
-          if (enemies.length > 0) {
-            // Rastgele bir rakibe veya ilk rakibe (basitlik için ilk)
-            const target = enemies[Math.floor(Math.random() * enemies.length)];
-            
-            // Kalkan kontrolü (Kalkan yoksa hasar alır)
-            if (Date.now() > target.shieldEndTime) {
-              target.hp -= proj.damage;
-              if (target.hp < 0) target.hp = 0;
+        let hit = false;
+        
+        // Ekrandan çıktıysa yokedelim
+        if (proj.x < 0 || proj.x > 800 || proj.y < 0 || proj.y > 400) {
+            hit = true;
+        }
+
+        // Siperlere (Obstacles) çarpışma
+        if (!hit) {
+            for (let j = room.obstacles.length - 1; j >= 0; j--) {
+                let obs = room.obstacles[j];
+                if (obs.hp > 0 && 
+                    proj.x < obs.x + obs.width &&
+                    proj.x + proj.width > obs.x &&
+                    proj.y < obs.y + obs.height &&
+                    proj.y + proj.height > obs.y) {
+                    
+                    hit = true;
+                    // Duvarı yıkma
+                    obs.hp -= proj.damage;
+                    break; 
+                }
             }
-          }
-          
-          room.projectiles.splice(i, 1);
+        }
+
+        // Oyunculara (Rakibe) çarpışma
+        if (!hit) {
+            const targetTeam = proj.team === 1 ? 2 : 1;
+            for (const target of room.players) {
+                if (target.team === targetTeam && target.hp > 0) {
+                    if (proj.x < target.x + target.width &&
+                        proj.x + proj.width > target.x &&
+                        proj.y < target.y + target.height &&
+                        proj.y + proj.height > target.y) {
+                        
+                        hit = true;
+                        target.hp -= proj.damage;
+                        if (target.hp < 0) target.hp = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (hit) {
+            room.projectiles.splice(i, 1);
         }
       }
       
@@ -235,16 +402,16 @@ setInterval(() => {
       
       if (!team1Alive || !team2Alive) {
           let winnerTeam = team1Alive ? 1 : 2;
-          // Takımda sadece 1 kazananı seçeceğimiz için veya takım id'si, burada ilk kişiyi baz alıyoruz
           const winner = room.players.find(p => p.team === winnerTeam);
           finishRace(room, winner ? winner.id : null);
           continue;
       }
       
-      // Her halükarda durumu client'a yolla (Mermiler uçarken)
       io.to(room.id).emit('combat_state', {
         players: room.getPositions(),
-        projectiles: room.projectiles
+        projectiles: room.projectiles,
+        obstacles: room.obstacles,
+        powerups: room.powerups
       });
     }
   }
