@@ -1,16 +1,17 @@
 // quiz.js
 
-// Otonom Araçlar temalı 10 adet gittikçe zorlaşan soru havuzu
+// Otonom Araçlar temalı 11 adet gittikçe zorlaşan soru havuzu
 const questions = [
-    { text: "Otonom araçlar etrafını algılamak için hangi temel teknolojileri kullanır?", options: ["A) LIDAR, Radar, Kamera", "B) Sadece GPS", "C) Radyo Dalgaları", "D) Bluetooth"], correct: 0 },
-    { text: "Sürücüye hiç ihtiyaç duyulmayan 'Tam Otonom' sürüş hangi seviyedir?", options: ["A) Seviye 3", "B) Seviye 4", "C) Seviye 5", "D) Seviye 6"], correct: 2 },
+    { text: "Teknolojide sıkça duyduğumuz 'Otonom' kelimesinin temel anlamı nedir?", options: ["A) Kendi Kendine Yeten / Yöneden", "B) Elektrikli Motor", "C) Hızlı Giden", "D) Uzaktan Kumandalı"], correct: 0 },
+    { text: "Tekerleklerin bağlandığı ve gücün iletilmesini sağlayan mil sistemine ne ad verilir?", options: ["A) Dingil (Aks)", "B) Amortisör", "C) Şasi", "D) Buji"], correct: 0 },
+    { text: "Aşağıdakilerden hangisi doğrudan bir 'Mikrodenetleyici' DEĞİLDİR (kart düzeyinde bilgisayardır)?", options: ["A) Arduino Uno", "B) Raspberry Pi", "C) ESP32", "D) PIC16F877A"], correct: 1 },
+    { text: "Otonom araçların çevresini lazer ışınlarıyla 3 boyutlu taramasını sağlayan en önemli donanım hangisidir?", options: ["A) LIDAR", "B) Radar", "C) Ultrasonik Sensör", "D) Termal Kamera"], correct: 0 },
+    { text: "Sürücüye hiç ihtiyaç duyulmayan 'Tam Otonom' sürüş seviyesi hangisidir?", options: ["A) Seviye 3", "B) Seviye 4", "C) Seviye 5", "D) Seviye 6"], correct: 2 },
     { text: "Şerit Takip Sistemi (LKA) temel olarak ne işe yarar?", options: ["A) Aracı şeritte tutar", "B) Hızı artırır", "C) Yakıt tasarrufu sağlar", "D) Silecekleri açar"], correct: 0 },
     { text: "Araçların çevresiyle haberleştiği 'V2X' sisteminin açılımı nedir?", options: ["A) Velocity 2 X", "B) Vehicle to Everything", "C) Value to X", "D) Vision to X"], correct: 1 },
-    { text: "Otonom aracın önünde hiçbir şey yokken aniden fren yapması hatasına ne ad verilir?", options: ["A) Panic Stop", "B) Phantom Braking", "C) Ghost Stop", "D) Sudden Halt"], correct: 1 },
-    { text: "Sürüş sistemlerinde nesne tanıma (object detection) için en sık kullanılan yapay zeka mimarisi hangisidir?", options: ["A) RNN", "B) LSTM", "C) CNN (Evrişimli Sinir Ağları)", "D) GAN"], correct: 2 },
-    { text: "SAE (Otomotiv Mühendisleri Birliği) standartlarına göre 'Koşullu Otonomi' hangi seviyeyi ifade eder?", options: ["A) Seviye 2", "B) Seviye 3", "C) Seviye 4", "D) Seviye 5"], correct: 1 },
+    { text: "Otonom aracın önünde hiçbir engel yokken aniden fren yapması hatasına ne ad verilir?", options: ["A) Panic Stop", "B) Phantom Braking", "C) Ghost Stop", "D) Sudden Halt"], correct: 1 },
+    { text: "Görüntü işleme ve nesne tanıma (object detection) için en sık kullanılan yapay zeka mimarisi hangisidir?", options: ["A) RNN", "B) LSTM", "C) CNN (Evrişimli Sinir Ağları)", "D) GAN"], correct: 2 },
     { text: "Araçlarda haritalama ve lokalizasyon için kullanılan SLAM algoritmasının açılımı nedir?", options: ["A) Simultaneous Localization and Mapping", "B) Simple Location and Movement", "C) Secure Location and Mapping", "D) System Level Auto Movement"], correct: 0 },
-    { text: "LIDAR sensörlerinin otonom araçlardaki kameralara kıyasla en büyük dezavantajı nedir?", options: ["A) Daha yavaş çalışması", "B) Gece görememesi", "C) Yüksek maliyeti", "D) Renkleri ayırt edememesi"], correct: 2 },
     { text: "Otonom araç simülasyonları geliştirmek için yaygın olarak kullanılan popüler açık kaynaklı platform hangisidir?", options: ["A) CARLA", "B) Unity ML", "C) Unreal Engine", "D) Gazebo"], correct: 0 }
 ];
 
@@ -32,7 +33,7 @@ const sprite = document.getElementById('enemy-sprite');
 // SPRITES (Public klasöründe yer almakta)
 const SPRITE_NORMAL = "/public/DEOS CAR NORMAL.png";
 const SPRITE_ANGRY = "/public/DEOS CAR SİNİRLİ.png";
-const SPRITE_HAPPY = "/public/DEOS CAR MUTLU.png"; 
+const SPRITE_HAPPY = "/public/DEOS CAR MUTLU.png";
 
 // Oyunun Başlatılması
 setTimeout(() => {
@@ -49,7 +50,7 @@ function typeWriterEffect(text, callback) {
     dialogueText.innerHTML = "";
     optionsGrid.style.display = 'none';
     dialogueText.style.display = 'block';
-    
+
     let i = 0;
     isTyping = true;
     typeInterval = setInterval(() => {
@@ -83,7 +84,7 @@ function showNextQuestion() {
         // Şıkları göster
         dialogueText.style.display = 'none';
         optionsGrid.style.display = 'grid';
-        
+
         for (let i = 0; i < 4; i++) {
             const btn = document.getElementById(`btn-${i}`);
             btn.innerText = q.options[i];
@@ -106,9 +107,9 @@ function selectAnswer(index) {
         dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Doğru Cevap! Rakibe hasar verdin!";
-        
-        takeEnemyDamage(1); 
-        
+
+        takeEnemyDamage(1);
+
         setTimeout(() => {
             currentLevelIndex++;
             showNextQuestion();
@@ -118,10 +119,10 @@ function selectAnswer(index) {
         dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Yanlış Cevap! Hasar aldın...";
-        
+
         takePlayerDamage(1);
         setSprite(SPRITE_HAPPY); // Araba mutlu oluyor bizi vurduğu için
-        
+
         setTimeout(() => {
             if (enemyHp > 0) setSprite(SPRITE_NORMAL);
             currentLevelIndex++;
@@ -133,11 +134,11 @@ function selectAnswer(index) {
 function takeEnemyDamage(amount) {
     enemyHp -= amount;
     if (enemyHp < 0) enemyHp = 0;
-    
+
     // Can Barı Güncellemesi
     const percent = (enemyHp / enemyMaxHp) * 100;
     hpFill.style.width = percent + '%';
-    
+
     // Yüzdeye Göre Renkler
     if (percent <= 20) {
         hpFill.className = 'hp-bar-fill hp-red';
@@ -146,21 +147,21 @@ function takeEnemyDamage(amount) {
     } else {
         hpFill.className = 'hp-bar-fill';
     }
-    
+
     // Animasyon ve SİNİRLİ sprite geçişi
     setSprite(SPRITE_ANGRY);
     sprite.classList.add('damage-anim');
-    
+
     setTimeout(() => {
         sprite.classList.remove('damage-anim');
         if (enemyHp > 0) {
             setSprite(SPRITE_NORMAL);
         } else {
-             // Ölüm Efekti
-             sprite.style.filter = 'drop-shadow(0 0 15px red) grayscale(100%)';
-             sprite.style.transform = 'translateY(80px) scaleY(0.1)';
-             sprite.style.opacity = '0';
-             sprite.style.transition = 'all 1.5s cubic-bezier(0.5, 0, 1, 1)';
+            // Ölüm Efekti
+            sprite.style.filter = 'drop-shadow(0 0 15px red) grayscale(100%)';
+            sprite.style.transform = 'translateY(80px) scaleY(0.1)';
+            sprite.style.opacity = '0';
+            sprite.style.transition = 'all 1.5s cubic-bezier(0.5, 0, 1, 1)';
         }
     }, 500); // Hasar animasyon süresi beklemesi
 }
@@ -168,11 +169,11 @@ function takeEnemyDamage(amount) {
 function takePlayerDamage(amount) {
     playerHp -= amount;
     if (playerHp < 0) playerHp = 0;
-    
+
     // Can Barı Güncellemesi
     const percent = (playerHp / playerMaxHp) * 100;
     playerHpFill.style.width = percent + '%';
-    
+
     if (percent <= 20) {
         playerHpFill.className = 'hp-bar-fill hp-red';
     } else if (percent <= 50) {
