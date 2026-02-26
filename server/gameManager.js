@@ -5,13 +5,16 @@ class Player {
     this.id = id;
     this.name = name || `Player ${id.substr(0, 6)}`;
     this.color = '#FFFFFF'; // Geçici renk, Room'a girince değişecek
-    this.position = 0;
+    this.hp = 100;
+    this.team = 1; // 1 (Sol), 2 (Sağ)
+    this.shieldEndTime = 0;
     this.ready = false;
     this.antiCheat = new AntiCheat();
   }
 
   reset() {
-    this.position = 0;
+    this.hp = 100;
+    this.shieldEndTime = 0;
     this.ready = false;
   }
 }
@@ -22,6 +25,7 @@ class Room {
     this.players = [];
     this.gameState = 'waiting'; // waiting, ready, racing, finished
     this.startTime = null;
+    this.projectiles = []; // Ateşlenen mermi ve füzeleri takip eder
     this.antiCheat = new AntiCheat();
   }
 
@@ -33,6 +37,9 @@ class Room {
       const availableColors = colors.filter(c => !usedColors.includes(c));
       player.color = availableColors[0] || colors[0]; // Boşta olan ilk rengi ata
       
+      // Takım Belirleme (Sırayla 1-2-1-2)
+      player.team = (this.players.length % 2 === 0) ? 1 : 2; 
+
       this.players.push(player);
       return true;
     }
@@ -59,8 +66,9 @@ class Room {
       id: p.id,
       name: p.name,
       color: p.color,
-      ready: p.ready,
-      position: p.position
+      team: p.team,
+      hp: p.hp,
+      ready: p.ready
     }));
   }
 
@@ -68,20 +76,23 @@ class Room {
     return this.players.map(p => ({
       id: p.id,
       name: p.name,
-      position: p.position,
+      team: p.team,
+      hp: p.hp,
+      shieldActive: Date.now() < p.shieldEndTime,
       color: p.color
     }));
   }
 
   getRankings() {
     return this.players
-      .sort((a, b) => b.position - a.position)
+      .sort((a, b) => b.hp - a.hp) // Canı çok olan üste
       .map((p, index) => ({
         rank: index + 1,
         id: p.id,
         name: p.name,
         color: p.color,
-        position: p.position
+        hp: p.hp,
+        team: p.team
       }));
   }
 
@@ -95,6 +106,7 @@ class Room {
 
   reset() {
     this.players.forEach(p => p.reset());
+    this.projectiles = [];
     this.gameState = 'waiting';
     this.startTime = null;
   }

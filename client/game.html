@@ -56,16 +56,22 @@
         <!-- Yarış Ekranı -->
         <div id="raceScreen" class="screen">
             <div class="race-header">
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div id="progressFill" class="progress-fill"></div>
+                <!-- Takım 1 Can Barı (Sol) -->
+                <div class="team-hp-container team1">
+                    <div class="team-name">TAKIM 1</div>
+                    <div class="hp-bar-bg">
+                        <div id="team1HpFill" class="hp-fill"></div>
                     </div>
-                    <div id="progressText" class="progress-text">%0</div>
                 </div>
                 
-                <div class="ranking-container">
-                    <div class="ranking-title">Sıralama</div>
-                    <div id="rankingList" class="ranking-list"></div>
+                <div class="vs-text">VS</div>
+                
+                <!-- Takım 2 Can Barı (Sağ) -->
+                <div class="team-hp-container team2">
+                    <div class="team-name">TAKIM 2</div>
+                    <div class="hp-bar-bg">
+                        <div id="team2HpFill" class="hp-fill"></div>
+                    </div>
                 </div>
             </div>
             
@@ -78,14 +84,19 @@
                     <div class="nitro-bar">
                         <div id="nitroFill" class="nitro-fill"></div>
                     </div>
-                    <div class="nitro-text">NITRO</div>
+                    <div class="nitro-text">FÜZE</div>
                 </div>
 
-                <button id="clickBtn" class="click-button">
-                    <span class="btn-main-text">TIKLA</span>
-                    <span class="btn-sub-text">Arabanı İlerlet!</span>
-                    <div class="btn-ripple"></div>
-                </button>
+                <div class="main-actions">
+                    <button id="clickBtn" class="click-button">
+                        <span class="btn-main-text">ATEŞ ET!</span>
+                        <div class="btn-ripple"></div>
+                    </button>
+                    
+                    <button id="shieldBtn" class="shield-button">
+                        <span class="btn-sub-text">KALKAN</span>
+                    </button>
+                </div>
             </div>
         </div>
 

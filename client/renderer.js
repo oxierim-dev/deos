@@ -3,20 +3,17 @@ let canvas;
 let ctx;
 let canvasWidth = 800;
 let canvasHeight = 400;
-let trackLength = 1000;
 let lanes = 4;
 let laneHeight;
 let cars = [];
-let finishLineX;
+let flyingProjectiles = [];
 let backgroundOffset = 0;
-let trackOffset = 0;
 let particles = [];
 
 // Araba görseli
 const carImage = new Image();
 carImage.src = '/car_optimized.png';
 
-// Resim yüklendiğinde canvas'ı güncellemesini zorlamak için ufak destek
 carImage.onload = () => {
     console.log("Araba resmi başarıyla yüklendi.");
 };
@@ -25,11 +22,16 @@ carImage.onerror = () => {
 };
 
 // Araba çizimi (Image)
-function drawPixelCar(ctx, x, y, color, scale = 1) {
+function drawPixelCar(ctx, x, y, color, team = 1) {
     ctx.save();
     ctx.translate(x, y);
-    // Arabayı yeni boyutuyla çiziyoruz (Genişlik: 100, Yükseklik: 45)
-    ctx.drawImage(carImage, -20, -7.5, 100, 45);
+    if (team === 2) {
+        // Yönü sola çevir
+        ctx.scale(-1, 1);
+        ctx.drawImage(carImage, -80, -7.5, 100, 45);
+    } else {
+        ctx.drawImage(carImage, -20, -7.5, 100, 45);
+    }
     ctx.restore();
 }
 
@@ -48,11 +50,8 @@ function initRaceCanvas() {
     canvasWidth = rect.width;
     canvasHeight = rect.height;
 
-    // Şerit yüksekliğini hesapla
-    laneHeight = canvasHeight / lanes;
-
-    // Bitiş çizgisi pozisyonu
-    finishLineX = canvasWidth - 80;
+    // Şerit yüksekliğini hesapla (4 kişi için 2 yan, 2 alt satır)
+    laneHeight = canvasHeight / 2; 
 
     // Arabaları başlat
     initCars();
@@ -66,73 +65,42 @@ function initCars() {
     // Renkleri sabitleyelim ki oyuncular karışmasın
     const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00'];
 
-    for (let i = 0; i < lanes; i++) {
-        cars.push({
-            id: null,
-            name: '',
-            x: 50,
-            y: (i * laneHeight) + (laneHeight / 2) - 15,
-            width: 60,
-            height: 30,
-            position: 0,
-            color: colors[i],
-            speed: 0,
-            bobOffset: 0
-        });
-    }
+    // Slot 1: Takım 1 Player 1
+    // Slot 2: Takım 2 Player 1
+    // Slot 3: Takım 1 Player 2
+    // Slot 4: Takım 2 Player 2
+    cars.push({ id: null, name: '', team: 1, x: 100, y: laneHeight / 2, color: colors[0], bobOffset: 0, hp: 100, shieldActive: false });
+    cars.push({ id: null, name: '', team: 2, x: canvasWidth - 100, y: laneHeight / 2, color: colors[1], bobOffset: 0, hp: 100, shieldActive: false });
+    cars.push({ id: null, name: '', team: 1, x: 100, y: (laneHeight / 2) + laneHeight, color: colors[2], bobOffset: 0, hp: 100, shieldActive: false });
+    cars.push({ id: null, name: '', team: 2, x: canvasWidth - 100, y: (laneHeight / 2) + laneHeight, color: colors[3], bobOffset: 0, hp: 100, shieldActive: false });
 }
 
-function updateCanvasPositions(positions) {
-    if (!positions || positions.length === 0) return;
+function updateCanvasPositions(data) {
+    if (!data) return;
 
-    // Hız efekti için track offset güncelle
-    // En hızlı arabanın hızına göre arka planı hareket ettir
-    // Ancak burada basitçe sürekli bir hareket verelim
-    trackOffset -= 2;
+    const serverPlayers = data.players || [];
+    flyingProjectiles = data.projectiles || [];
+
+    // Arka plan paralaks efekti (yavaşça hareket etsin atmosferik)
     backgroundOffset -= 0.5;
-
-    if (trackOffset <= -40) trackOffset = 0;
     if (backgroundOffset <= -canvasWidth) backgroundOffset = 0;
 
-    positions.forEach((player) => {
+    serverPlayers.forEach((player) => {
         // Rengine göre doğru arabayı bul
         const carIndex = cars.findIndex(c => c.color === player.color);
 
         if (carIndex !== -1) {
             cars[carIndex].id = player.id;
-            cars[carIndex].name = player.name || `Player ${player.id.substr(0, 4)}`; // İsim yoksa ID kullan
-            cars[carIndex].position = player.position;
-
-            // Pozisyona göre X koordinatını güncelle (0-1000 arası)
-            // Ekranın %10'undan başlayıp %90'ına kadar gitsin
-            const maxPosition = 1000;
-            const screenStart = 50;
-            const screenEnd = canvasWidth - 100;
-            const progress = Math.min(player.position / maxPosition, 1);
-
-            // Hedef X pozisyonu
-            const targetX = screenStart + (screenEnd - screenStart) * progress;
-
-            // Rendersafe X coordinate against CSS layout NaN corruptions
-            if (!isFinite(targetX)) return;
-            if (!isFinite(cars[carIndex].x)) cars[carIndex].x = targetX;
-
-            // Yumuşak geçiş (Interpolation)
-            cars[carIndex].x += (targetX - cars[carIndex].x) * 0.1;
+            cars[carIndex].name = player.name || `Player ${player.id.substr(0, 4)}`;
+            cars[carIndex].hp = player.hp;
+            cars[carIndex].team = player.team;
+            cars[carIndex].shieldActive = player.shieldActive;
 
             // Araba sallanma efekti (Motor çalışıyor hissi)
-            cars[carIndex].bobOffset = Math.sin(Date.now() / 100) * 2;
-
-            // Egzoz partikülü ekle (hız hissini artırmak için)
-            if (Math.random() > 0.2) {
-                particles.push({
-                    x: cars[carIndex].x - 10,
-                    y: cars[carIndex].y + 20 + cars[carIndex].bobOffset,
-                    vx: -Math.random() * 5 - 2,
-                    vy: (Math.random() - 0.5) * 2,
-                    life: 1.0,
-                    color: cars[carIndex].color
-                });
+            if (player.hp > 0) {
+                cars[carIndex].bobOffset = Math.sin(Date.now() / 100) * 2;
+            } else {
+                cars[carIndex].bobOffset = 0;
             }
         }
     });
@@ -142,11 +110,155 @@ function animate() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     drawBackground();
-    drawTrack();
-    drawParticles();
+    drawArenaLines();
     drawCars();
+    drawProjectiles();
+    drawParticles();
 
     requestAnimationFrame(animate);
+}
+
+function drawBackground() {
+    // Gökyüzü / Siber Punk Arena Arka Planı
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+    gradient.addColorStop(0, '#1a001a'); // Mor/Siyah
+    gradient.addColorStop(1, '#001a33'); // Koyu lacivert
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Grid (Neon Çizgiler Kafesi)
+    ctx.save();
+    ctx.translate(backgroundOffset, 0);
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    for (let j = 0; j < 2; j++) {
+        let offsetX = j * canvasWidth;
+        for (let i = 0; i < 20; i++) {
+            const x = i * 40;
+            ctx.beginPath();
+            ctx.moveTo(x + offsetX, 0);
+            ctx.lineTo(x + offsetX, canvasHeight);
+            ctx.stroke();
+        }
+    }
+    ctx.restore();
+}
+
+function drawArenaLines() {
+    // Zemini çiz (Arena tabanı)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Orta çizgi (VS Hattı)
+    ctx.strokeStyle = '#ff00ff';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([15, 15]);
+    ctx.beginPath();
+    ctx.moveTo(canvasWidth / 2, 0);
+    ctx.lineTo(canvasWidth / 2, canvasHeight);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawCars() {
+    cars.forEach((car) => {
+        if (car.id && car.hp > 0) {
+            // İsim etiketi
+            ctx.fillStyle = '#FFF';
+            ctx.font = 'bold 12px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${car.name} (${car.hp})`, car.x, car.y - 35 + car.bobOffset);
+
+            // Kalkan (Shield) Çizimi
+            if (car.shieldActive) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(car.x + (car.team === 1 ? 30 : 0), car.y + car.bobOffset + 15, 60, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ffff';
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Arabayı çiz
+            drawPixelCar(ctx, car.x, car.y + car.bobOffset, car.color, car.team);
+            
+            // Çizim sırasında hafif duman (Sağlam motor egzozu)
+            if (Math.random() > 0.4) {
+                particles.push({
+                    x: car.x + (car.team === 1 ? -10 : 30),
+                    y: car.y + 20 + car.bobOffset,
+                    vx: car.team === 1 ? -Math.random()*2 : Math.random()*2,
+                    vy: (Math.random() - 0.5) * 2,
+                    life: 0.5,
+                    color: '#888'
+                });
+            }
+
+        } else if (car.id && car.hp <= 0) {
+            // Ölü (Yok edilmiş kaza halinde araç)
+            ctx.fillStyle = '#ff3333';
+            ctx.font = 'bold 14px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText(`ELENDİ`, car.x, car.y - 30);
+            
+            // Yoğun siyah duman
+            if(Math.random() > 0.5) {
+                 particles.push({
+                    x: car.x + (Math.random() - 0.5) * 40,
+                    y: car.y + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: -Math.random() * 3,
+                    life: 1.5,
+                    color: '#333'
+                });
+            }
+        }
+    });
+}
+
+function drawProjectiles() {
+    flyingProjectiles.forEach(p => {
+        const startX = p.team === 1 ? 160 : canvasWidth - 160;
+        const endX = p.team === 1 ? canvasWidth - 100 : 100;
+        const currentX = startX + ((endX - startX) * (p.progress / 100));
+        
+        // Atan arabayı bul (Y eksenini ayarlamak için)
+        const ownerCar = cars.find(c => c.id === p.ownerId);
+        const y = ownerCar ? ownerCar.y + 15 : canvasHeight / 2;
+
+        ctx.save();
+        if (p.type === 'missile') {
+            // Füze Çizimi
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff5555';
+            ctx.shadowBlur = 15;
+            ctx.fillRect(currentX - 15, y - 8, 30, 16);
+            ctx.fillStyle = '#ffff00';
+            ctx.fillRect(currentX + (p.team === 1 ? 10 : -15), y - 4, 10, 8); // Füze başlığı
+            
+            // Füze ateşi dumanı
+            particles.push({
+                x: currentX + (p.team === 1 ? -20 : 20),
+                y: y,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                life: 1.0,
+                color: '#ffaa00'
+            });
+        } else {
+            // Lazer / Mermi Çizimi
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.fillRect(currentX - 10, y - 2, 20, 4);
+        }
+        ctx.restore();
+    });
 }
 
 function drawParticles() {
@@ -168,110 +280,12 @@ function drawParticles() {
         ctx.shadowColor = p.color;
         
         ctx.beginPath();
-        // Guard against NaN values crashing the renderer context arc func
         if (isFinite(p.x) && isFinite(p.y)) {
             ctx.arc(p.x, p.y, Math.random() * 4 + 2, 0, Math.PI * 2);
         }
         ctx.fill();
         ctx.restore();
     }
-}
-
-function drawBackground() {
-    // Gökyüzü (Sabit)
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-    gradient.addColorStop(0, '#0a0a2a'); // Gece mavisi
-    gradient.addColorStop(1, '#2a2a40');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    // Uzak Şehir Silüeti (Paralaks - Yavaş Hareket)
-    ctx.save();
-    ctx.fillStyle = '#111';
-    ctx.translate(backgroundOffset, 0);
-
-    // Şehir silüetini iki kez çiz (döngüsel olması için)
-    for (let j = 0; j < 2; j++) {
-        let offsetX = j * canvasWidth;
-        for (let i = 0; i < 20; i++) {
-            const h = 50 + Math.random() * 100;
-            const w = 40 + Math.random() * 40;
-            const x = i * 60;
-            ctx.fillRect(x + offsetX, canvasHeight - h, w, h);
-
-            // Pencere ışıkları
-            ctx.fillStyle = '#FFFF00';
-            if (Math.random() > 0.5) {
-                ctx.fillRect(x + offsetX + 10, canvasHeight - h + 10, 5, 5);
-            }
-            ctx.fillStyle = '#111';
-        }
-    }
-    ctx.restore();
-}
-
-function drawTrack() {
-    // Pist Zemini
-    ctx.fillStyle = '#222'; // Koyu asfalt
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    // Şerit Çizgileri (Hareketli)
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([20, 20]);
-    ctx.lineDashOffset = -trackOffset; // Hareket efekti
-
-    for (let i = 1; i < lanes; i++) {
-        const y = i * laneHeight;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvasWidth, y);
-        ctx.stroke();
-    }
-
-    ctx.setLineDash([]);
-
-    // Bitiş Çizgisi (Eğer birisi yaklaştıysa çiz)
-    // Basitlik için her zaman çiziyoruz ama konumu sabit
-    drawFinishLine();
-}
-
-function drawFinishLine() {
-    const squareSize = 10;
-    const startY = 0;
-    const endY = canvasHeight;
-    const finishX = canvasWidth - 80;
-
-    for (let y = startY; y < endY; y += squareSize) {
-        for (let x = 0; x < 20; x += squareSize) {
-            ctx.fillStyle = ((x / squareSize) + (y / squareSize)) % 2 === 0 ? '#000000' : '#FFFFFF';
-            ctx.fillRect(finishX + x, y, squareSize, squareSize);
-        }
-    }
-
-    // Bitiş yazısı
-    ctx.fillStyle = '#FFF';
-    ctx.font = 'bold 20px Orbitron';
-    ctx.save();
-    ctx.translate(finishX + 35, canvasHeight / 2);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillText('FINISH', -30, 0);
-    ctx.restore();
-}
-
-function drawCars() {
-    cars.forEach((car) => {
-        if (car.id) {
-            // İsim etiketi
-            ctx.fillStyle = '#FFF';
-            ctx.font = '12px Orbitron';
-            ctx.textAlign = 'center';
-            ctx.fillText(car.name, car.x + 30, car.y - 10 + car.bobOffset);
-
-            // Arabayı çiz
-            drawPixelCar(ctx, car.x, car.y + car.bobOffset, car.color);
-        }
-    });
 }
 
 // Global fonksiyonlar

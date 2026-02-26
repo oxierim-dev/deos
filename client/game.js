@@ -53,10 +53,10 @@ function initializeGame() {
         startRace(data.countdown);
     });
     
-    // Oyuncu pozisyonlarını dinle
-    gameSocket.on('positions', function(data) {
-        racePositions = data;
-        updateRaceDisplay(data);
+    // Savaş durumlarını (HP, mermiler) dinle
+    gameSocket.on('combat_state', function(data) {
+        racePositions = data.players; // Geriye dönük uyumluluk için, renderer'da kullanılacak
+        updateCombatDisplay(data);
     });
     
     // Yarış bitiş olayını dinle
@@ -82,11 +82,18 @@ function setupEventListeners() {
         readyBtn.addEventListener('click', setPlayerReady);
     }
     
-    // Tıklama butonunu dinle
+    // Tıklama butonunu dinle (ATEŞ ET)
     const clickBtn = document.getElementById('clickBtn');
     if (clickBtn) {
         clickBtn.addEventListener('click', handleClick);
         clickBtn.addEventListener('touchstart', handleClick); // Mobil desteği
+    }
+
+    // Kalkan butonunu dinle
+    const shieldBtn = document.getElementById('shieldBtn');
+    if (shieldBtn) {
+        shieldBtn.addEventListener('click', activateShield);
+        shieldBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activateShield(); });
     }
     
     // Tekrar oyna butonunu dinle
@@ -95,13 +102,35 @@ function setupEventListeners() {
         playAgainBtn.addEventListener('click', playAgain);
     }
     
-    // Klavye desteği (Space tuşu)
+    // Klavye desteği (Space tuşu ateş, Shift kalkan)
     document.addEventListener('keydown', function(event) {
         if (event.code === 'Space' && gameState === 'racing') {
             event.preventDefault();
             handleClick(event);
         }
+        if (event.code === 'ShiftLeft' && gameState === 'racing') {
+            event.preventDefault();
+            activateShield();
+        }
     });
+}
+
+function activateShield() {
+    if (gameState === 'racing') {
+        const shieldBtn = document.getElementById('shieldBtn');
+        if (shieldBtn && !shieldBtn.disabled) {
+            gameSocket.emit('shield');
+            
+            // 10 saniye bekleme süresi (Cooldown)
+            shieldBtn.disabled = true;
+            shieldBtn.innerHTML = '<span class="btn-sub-text">BEKLE</span>';
+            
+            setTimeout(() => {
+                shieldBtn.disabled = false;
+                shieldBtn.innerHTML = '<span class="btn-sub-text">KALKAN</span>';
+            }, 10000);
+        }
+    }
 }
 
 function joinLobby() {
@@ -274,28 +303,27 @@ function startRace(countdown) {
 }
 
 function handleClick(event) {
-    if (event) event.preventDefault();
+    if (event && event.type !== 'keydown') event.preventDefault();
     
     // Sadece yarış durumunda tıklamaları gönder
     if (gameState === 'racing') {
         if (!isNitroActive) {
-            gameSocket.emit('click');
+            gameSocket.emit('shoot');
             
-            // Nitro Şarj Mantığı
+            // Füze (Ulti) Şarj Mantığı
             const now = Date.now();
-            if (lastClickTime > 0 && (now - lastClickTime) < 200) { // Hızlı tıklama var (saniyede 5+ tık)
-                nitroCharge += 5; // her hızlı tıkta %5 dolsun
+            if (lastClickTime > 0 && (now - lastClickTime) < 250) { // Hızlı tıklama var
+                nitroCharge += 4; // her hızlı tıkta %4 dolsun
             } else {
-                // Yavaşladıysa nitro barı yavaşça düşebilir ama şimdilik tutalım ya da az düşürelim
-                nitroCharge -= 1; 
+                nitroCharge -= 2; 
             }
             
             if (nitroCharge < 0) nitroCharge = 0;
             if (nitroCharge >= 100) {
-                activateNitro();
+                activateMissile();
             }
             
-            updateNitroUI();
+            updateMissileUI();
             lastClickTime = now;
         }
 
@@ -315,89 +343,70 @@ function handleClick(event) {
     }
 }
 
-function activateNitro() {
+function activateMissile() {
     isNitroActive = true;
     nitroCharge = 100;
     
-    // Nitro efekti (sarsıntı)
-    const raceContainer = document.querySelector('.race-track');
-    if (raceContainer) raceContainer.classList.add('nitro-shake');
+    // Füze atıldığını bildir
+    gameSocket.emit('missile');
     
-    // Sunucuya nitro kullanıldığını bildir
-    gameSocket.emit('use_nitro');
-    
-    // Nitro çubuğunu yavaş yavaş boşalt
+    // Füze çubuğunu yavaş yavaş boşalt
     const nitroInterval = setInterval(() => {
-        nitroCharge -= 10;
-        updateNitroUI();
+        nitroCharge -= 5;
+        updateMissileUI();
         
         if (nitroCharge <= 0) {
             clearInterval(nitroInterval);
             isNitroActive = false;
             nitroCharge = 0;
-            if (raceContainer) raceContainer.classList.remove('nitro-shake');
+            updateMissileUI();
         }
-    }, 100); // 1 saniyede biter
+    }, 100); // 2 saniyede biter (cooldown)
 }
 
-function updateNitroUI() {
+function updateMissileUI() {
     const nitroFill = document.getElementById('nitroFill');
     if (nitroFill) {
         nitroFill.style.height = nitroCharge + '%';
         if (isNitroActive) {
-            nitroFill.style.background = '#00ffff'; // Nitro rengi
-            nitroFill.style.boxShadow = '0 0 20px #00ffff';
+            nitroFill.style.background = '#ff0000'; // Füze rengi kırmızı
+            nitroFill.style.boxShadow = '0 0 20px #ff0000';
         } else {
-            nitroFill.style.background = '#ff00ff';
+            nitroFill.style.background = '#ffffff';
             nitroFill.style.boxShadow = 'none';
         }
     }
 }
 
-function updateRaceDisplay(positions) {
-    // Canvas renderer'ı güncelle
+function updateCombatDisplay(data) {
+    // Renderer'a hem oyuncuları hem mermileri yolla
     if (typeof updateCanvasPositions === 'function') {
-        updateCanvasPositions(positions);
-    }
-    
-    // Sıralamayı güncelle
-    updateRanking(positions);
-    
-    // İlerleme çubuğunu güncelle
-    updateProgress(positions);
-}
-
-function updateRanking(positions) {
-    const rankingList = document.getElementById('rankingList');
-    if (rankingList) {
-        // Pozisyona göre sırala
-        const sortedPositions = [...positions].sort((a, b) => b.position - a.position);
-        
-        let rankingHTML = '';
-        sortedPositions.forEach((player, index) => {
-            rankingHTML += `<div style="color: ${player.color}; font-weight: bold; margin: 5px 0;">${index + 1}. ${player.name}</div>`;
+        updateCanvasPositions({
+            players: data.players,
+            projectiles: data.projectiles
         });
-        
-        rankingList.innerHTML = rankingHTML;
     }
+    
+    // Can barlarını güncelle
+    updateHealthBars(data.players);
 }
 
-function updateProgress(positions) {
-    const myPosition = positions.find(p => p.id === myPlayerId);
-    if (myPosition) {
-        const progressPercent = Math.min((myPosition.position / 1000) * 100, 100);
-        
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        
-        if (progressFill) {
-            progressFill.style.width = progressPercent + '%';
-        }
-        
-        if (progressText) {
-            progressText.textContent = '%' + Math.round(progressPercent);
-        }
-    }
+function updateHealthBars(players) {
+    // Takım 1 Canı Hesapla (Ortalama veya Toplam, burada ortalama alalım)
+    const team1Players = players.filter(p => p.team === 1);
+    const team1TotalHp = team1Players.reduce((sum, p) => sum + p.hp, 0);
+    const team1HpPercent = team1Players.length > 0 ? (team1TotalHp / (team1Players.length * 100)) * 100 : 0;
+
+    // Takım 2 Canı Hesapla
+    const team2Players = players.filter(p => p.team === 2);
+    const team2TotalHp = team2Players.reduce((sum, p) => sum + p.hp, 0);
+    const team2HpPercent = team2Players.length > 0 ? (team2TotalHp / (team2Players.length * 100)) * 100 : 0;
+
+    const t1Fill = document.getElementById('team1HpFill');
+    if (t1Fill) t1Fill.style.width = Math.max(0, team1HpPercent) + '%';
+
+    const t2Fill = document.getElementById('team2HpFill');
+    if (t2Fill) t2Fill.style.width = Math.max(0, team2HpPercent) + '%';
 }
 
 function showResults(data) {
@@ -413,21 +422,27 @@ function showResults(data) {
     
     // Kazananı göster
     const winnerName = document.getElementById('winnerName');
-    if (winnerName && data.rankings.length > 0) {
-        const winner = data.rankings[0];
-        winnerName.textContent = winner.name;
-        winnerName.style.color = winner.color;
+    if (winnerName && data.winner) {
+        // Kazanan takımın adını yazdır
+        const winnerObj = data.rankings.find(r => r.id === data.winner);
+        if (winnerObj) {
+            winnerName.textContent = `TAKIM ${winnerObj.team} KAZANDI!`;
+            winnerName.style.color = winnerObj.team === 1 ? '#ff3333' : '#3333ff';
+        }
+    } else {
+        if(winnerName) winnerName.textContent = "BERABARE / OYUN BİTTİ";
     }
     
-    // Sıralamayı göster
+    // Sıralamayı (Kalan Canları) göster
     const finalRankings = document.getElementById('finalRankings');
     if (finalRankings) {
         let rankingsHTML = '';
         data.rankings.forEach((player, index) => {
+            const teamColor = player.team === 1 ? '#ff3333' : '#3333ff';
             rankingsHTML += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 10px; border-left: 5px solid ${player.color};">
-                    <span style="color: ${player.color}; font-weight: bold; font-size: 1.2rem;">${index + 1}. ${player.name}</span>
-                    <span style="color: #ffffff; font-weight: bold;">%${Math.round((player.position / 1000) * 100)}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 10px; border-left: 5px solid ${teamColor};">
+                    <span style="color: ${teamColor}; font-weight: bold; font-size: 1.2rem;">${player.name} (T${player.team})</span>
+                    <span style="color: #ffffff; font-weight: bold;">✚ ${Math.max(0, player.hp)} HP</span>
                 </div>
             `;
         });
