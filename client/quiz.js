@@ -1,7 +1,7 @@
 // quiz.js
 
-// Otonom Araçlar temalı 11 adet gittikçe zorlaşan soru havuzu
-const questions = [
+// 33 Adet Otonom Araç odaklı soru havuzu
+let questions = [
     { text: "Teknolojide sıkça duyduğumuz 'Otonom' kelimesinin temel anlamı nedir?", options: ["A) Kendi Kendine Yeten / Yöneden", "B) Elektrikli Motor", "C) Hızlı Giden", "D) Uzaktan Kumandalı"], correct: 0 },
     { text: "Tekerleklerin bağlandığı ve gücün iletilmesini sağlayan mil sistemine ne ad verilir?", options: ["A) Dingil (Aks)", "B) Amortisör", "C) Şasi", "D) Buji"], correct: 0 },
     { text: "Aşağıdakilerden hangisi doğrudan bir 'Mikrodenetleyici' DEĞİLDİR (kart düzeyinde bilgisayardır)?", options: ["A) Arduino Uno", "B) Raspberry Pi", "C) ESP32", "D) PIC16F877A"], correct: 1 },
@@ -12,8 +12,39 @@ const questions = [
     { text: "Otonom aracın önünde hiçbir engel yokken aniden fren yapması hatasına ne ad verilir?", options: ["A) Panic Stop", "B) Phantom Braking", "C) Ghost Stop", "D) Sudden Halt"], correct: 1 },
     { text: "Görüntü işleme ve nesne tanıma (object detection) için en sık kullanılan yapay zeka mimarisi hangisidir?", options: ["A) RNN", "B) LSTM", "C) CNN (Evrişimli Sinir Ağları)", "D) GAN"], correct: 2 },
     { text: "Araçlarda haritalama ve lokalizasyon için kullanılan SLAM algoritmasının açılımı nedir?", options: ["A) Simultaneous Localization and Mapping", "B) Simple Location and Movement", "C) Secure Location and Mapping", "D) System Level Auto Movement"], correct: 0 },
-    { text: "Otonom araç simülasyonları geliştirmek için yaygın olarak kullanılan popüler açık kaynaklı platform hangisidir?", options: ["A) CARLA", "B) Unity ML", "C) Unreal Engine", "D) Gazebo"], correct: 0 }
+    { text: "Otonom araç simülasyonları geliştirmek için yaygın olarak kullanılan popüler açık kaynaklı platform hangisidir?", options: ["A) CARLA", "B) Unity ML", "C) Unreal Engine", "D) Gazebo"], correct: 0 },
+    { text: "Otonom araçların çevreyi algılamasında kameralar hangi görevi üstlenir?", options: ["A) Sadece video çeker", "B) Renk, şerit ve trafik işaretlerini tanır", "C) Aracın hızını ölçer", "D) Motor sıcaklığını kontrol eder"], correct: 1 },
+    { text: "Seviye 0 otonomi ne anlama gelir?", options: ["A) Araç kendi kendine gider", "B) Sadece park edebilir", "C) Sürücü tüm aracı kontrol eder, otomasyon yoktur", "D) Uçan araba"], correct: 2 },
+    { text: "Aşağıdakilerden hangisi ünlü bir LiDAR üreticisidir?", options: ["A) Velodyne", "B) Logitech", "C) Kingston", "D) Asus"], correct: 0 },
+    { text: "Radar sensörünün kameralara göre en büyük avantajı nedir?", options: ["A) Renkleri çok iyi ayırır", "B) Sis, yağmur ve karda bile iyi çalışır", "C) Sesi kaydeder", "D) Şerit çizgilerini okur"], correct: 1 },
+    { text: "Otonom araçlar için büyük miktarda sürüş verisi toplanmasına ne denir?", options: ["A) Data Coding", "B) Deep Cleaning", "C) Veri Toplama (Data Collection)", "D) Code Compiling"], correct: 2 },
+    { text: "AEB (Otonom Acil Frenleme) sistemi hangi durumda devreye girer?", options: ["A) Yakıt bittiğinde", "B) Çarpışma riski algılandığında ve sürücü tepki vermediğinde", "C) Silecekler çalıştığında", "D) Araç park halindeyken"], correct: 1 },
+    { text: "Otonom sürüş algoritmalarının testleri genellikle ilk nerede başlar?", options: ["A) Kalabalık şehir merkezlerinde", "B) Bilgisayar simülasyonlarında", "C) Ormanlık doğa alanlarında", "D) Otoyollarda"], correct: 1 },
+    { text: "GPS (Küresel Konumlandırma Sistemi) otonom araca hangi bilgiyi sağlar?", options: ["A) Motor devrini", "B) Aracın dünya üzerindeki coğrafi konumunu", "C) Lastik basıncını", "D) Batarya seviyesini"], correct: 1 },
+    { text: "ACC (Adaptif Hız Sabitleyici) sisteminin özelliği nedir?", options: ["A) Öndeki araca göre hızı otomatik ayarlayıp mesafeyi korur", "B) Sadece manuel viteste çalışır", "C) Hızı sürekli artırır", "D) Aracı dikey olarak park eder"], correct: 0 },
+    { text: "Derin Öğrenme (Deep Learning) hangi temel alanın alt dalıdır?", options: ["A) Makine Öğrenimi (Machine Learning)", "B) Donanım Mühendisliği", "C) Veritabanı Yönetimi", "D) Oyun Motorları"], correct: 0 },
+    { text: "Sensör Füzyonu (Sensor Fusion) otonom araçlarda ne anlama gelir?", options: ["A) Sensörlerin aşırı ısınıp erimesi", "B) Kamera, Radar ve LiDAR verilerinin birleştirilerek anlamlı bir model oluşturulması", "C) Motor ile tekerleklerin uyumu", "D) Aracın şarj edilmesi"], correct: 1 },
+    { text: "Kör Nokta Uyarı Sistemi (BLIS) genellikle arabanın neresindeki sensörlerle çalışır?", options: ["A) Arka veya yan aynalardaki kısa mesafe Radarlar/Sensörler", "B) Tavandaki LiDAR", "C) Ön camdaki Kamera", "D) Navigasyon anteni"], correct: 0 },
+    { text: "IMU (Ataletsel Ölçüm Ünitesi) sensörü araçta neyi ölçer?", options: ["A) Motor sıcaklığını", "B) Rüzgar hızını", "C) Aracın ivmelenme ve dönüş yönelimlerini", "D) Yakıt kalitesini"], correct: 2 },
+    { text: "Yapay zekanın yayaları ve arabaları tanımlarken etraflarını dikdörtgen içine almasına ne denir?", options: ["A) Pixel Drawing", "B) Bounding Box (Sınır Kutusu)", "C) Circle Tag", "D) Vector Frame"], correct: 1 },
+    { text: "Sürücüsüz robotaksi (Robotaxi) hizmeti geliştiren ünlü şirketlerden biri hangisidir?", options: ["A) Waymo", "B) Netflix", "C) Spotify", "D) Adobe"], correct: 0 },
+    { text: "Otonom bir aracın 'Aktüatörleri' (Actuators) ne iş yapar?", options: ["A) Çevreyi görür", "B) Beynin verdiği kararları fiziksel harekete (direksiyon, fren, gaz) dönüştürür", "C) Haritayı günceller", "D) Müziği açar"], correct: 1 },
+    { text: "HD Haritalar (High Definition Maps) standart navigasyon haritalarından ne yönüyle ayrılır?", options: ["A) Sadece renkleri daha parlaktır", "B) Santimetre hassasiyetindedir ve her şerit detayını içerir", "C) Sadece otoyolları çizer", "D) Çok daha az bellek kullanır"], correct: 1 },
+    { text: "Teleoperasyon (Teleoperation) otonom sürüşte hangi anlama gelir?", options: ["A) Aracın televizyon donanımı içermesi", "B) İnsan operatörün gerektiğinde aracı uzaktan kontrol etmesi", "C) Sürücünün uyumasına izin vermesi", "D) Sadece telefonla kapıların kilitlenmesi"], correct: 1 },
+    { text: "Ultrasonik sensörler otonom araçlarda genellikle hangi amaçla kullanılır?", options: ["A) 200 metre ileriyi görmek için", "B) Yakın mesafe engelleri algılamak (örn: Park ederken)", "C) Uydu bağlantısı kurmak için", "D) Kırmızı ışıkları tanımak için"], correct: 1 },
+    { text: "CAN Bus (Controller Area Network) araçta ne işe yarar?", options: ["A) Eğlence sistemini çalıştırır", "B) Araçtaki tüm elektronik bileşenlerin birbiriyle iletişim kurmasını sağlayan sinir ağıdır", "C) Sadece klimayı kontrol eder", "D) Yakıtı filtreler"], correct: 1 },
+    { text: "Otonom araçların 'Karar Verme' (Decision Making) yazılımı hangi eylemi gerçekleştirir?", options: ["A) Verilere bakarak ne zaman fren yapılacağını veya dönüleceğini belirler", "B) Lastikleri şişirir", "C) Emniyet kemerini takar", "D) Motor yağını değiştirir"], correct: 0 },
+    { text: "Dinamik Nesne (Dynamic Object) terimi otonom sürüşte neyi ifade eder?", options: ["A) Yoldaki binalar", "B) Trafik ışığı direği", "C) Yaya, bisikletli veya hareket halindeki diğer araçlar", "D) Sabit reklam panoları"], correct: 2 }
 ];
+
+// Array shuffle (soruları rastgele ve her oyun yeni bir şekilde sıralar)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+shuffleArray(questions);
 
 let currentLevelIndex = 0;
 let enemyMaxHp = 6;
@@ -197,7 +228,7 @@ function takePlayerDamage(amount) {
 }
 
 function winGame() {
-    typeWriterEffect("Rakip DEOS CAR bayıldı! SAVAŞI KAZANDIN!", () => {
+    typeWriterEffect("Tebrik ederiz! Seni ekibimizde DEOS'ta görmekten mutluluk duyarız.", () => {
         setTimeout(() => {
             window.location.href = '/'; // Lobiye dön
         }, 4000);
