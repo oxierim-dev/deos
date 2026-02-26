@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +9,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="quiz.css">
 </head>
+
 <body>
+    <audio id="bg-music" src="/public/şarkı.mp3" loop autoplay></audio>
     <div id="gameboy-wrapper">
         <div class="gameboy-top">
             <div class="line"></div>
             <div class="line"></div>
         </div>
-        
+
         <div id="gameboy-screen-bezel">
             <div class="screen-header">
                 <div class="battery-light"></div>
                 <span class="battery-text">BATTERY</span>
             </div>
-            
+
             <div id="game-container">
                 <!-- Battle Scene -->
                 <div id="battle-scene">
@@ -44,12 +47,12 @@
                     </div>
 
                     <!-- Player Sprite -->
-                     <div id="player-sprite-container">
-                         <img id="player-sprite" src="/public/anakarakter.png" alt="Player">
-                     </div>
+                    <div id="player-sprite-container">
+                        <img id="player-sprite" src="/public/anakarakter.png" alt="Player">
+                    </div>
 
                     <!-- Player Status -->
-                     <div id="player-status" class="status-box">
+                    <div id="player-status" class="status-box">
                         <div class="name-level">
                             <span class="name">OYUNCU</span>
                             <span class="level">Lv50</span>
@@ -76,19 +79,32 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="screen-brand">DEOS BOY</div>
         </div>
-        
+
         <div class="gameboy-controls">
             <div class="d-pad"></div>
-            <div class="action-buttons">
-                <div class="btn-a">A</div>
-                <div class="btn-b">B</div>
+            <div class="action-buttons-diamond">
+                <div class="play-btn btn-top btn-color-a" onclick="document.getElementById('btn-0').click()">A</div>
+                <div class="play-btn btn-left btn-color-b" onclick="document.getElementById('btn-1').click()">B</div>
+                <div class="play-btn btn-right btn-color-c" onclick="document.getElementById('btn-2').click()">C</div>
+                <div class="play-btn btn-bottom btn-color-d" onclick="document.getElementById('btn-3').click()">D</div>
             </div>
         </div>
     </div>
-    
+
+    <script>
+        // Ses dosyası tetikleyicisi
+        document.body.addEventListener('click', () => {
+            const bgm = document.getElementById('bg-music');
+            if (bgm.paused) {
+                bgm.play().catch(e => console.log('Autoplay engellendi:', e));
+            }
+        }, { once: true });
+    </script>
+
     <script src="quiz.js"></script>
 </body>
+
 </html>

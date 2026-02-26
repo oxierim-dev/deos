@@ -96,16 +96,15 @@ body {
     box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.2);
 }
 
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
+.action-buttons-diamond {
+    position: relative;
+    width: 100px;
+    height: 100px;
 }
 
-.action-buttons div {
-    width: 45px;
-    height: 45px;
-    background-color: #b00040;
+.play-btn {
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -114,11 +113,50 @@ body {
     font-size: 14px;
     box-shadow: 2px 4px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(0, 0, 0, 0.5);
     font-family: sans-serif;
+    position: absolute;
+    cursor: pointer;
 }
 
-.btn-b {
-    transform: translateY(15px);
+.btn-top {
+    top: 0;
+    left: 32px;
 }
+
+.btn-bottom {
+    bottom: 0;
+    left: 32px;
+}
+
+.btn-left {
+    top: 32px;
+    left: 0;
+}
+
+.btn-right {
+    top: 32px;
+    right: 0;
+}
+
+.btn-color-a {
+    background-color: #d12020;
+}
+
+/* Kırmızı */
+.btn-color-b {
+    background-color: #2050d1;
+}
+
+/* Mavi */
+.btn-color-c {
+    background-color: #8b20d1;
+}
+
+/* Mor */
+.btn-color-d {
+    background-color: #222222;
+}
+
+/* Siyah */
 
 #game-container {
     width: 800px;
@@ -237,7 +275,7 @@ body {
 #player-sprite-container {
     position: absolute;
     bottom: 20px;
-    left: -40px;
+    left: -80px;
     width: 150px;
     height: 200px;
 }
@@ -318,6 +356,22 @@ body {
     grid-template-rows: 1fr 1fr;
     gap: 15px;
     height: 100%;
+}
+
+#btn-0 {
+    color: #d12020;
+}
+
+#btn-1 {
+    color: #2050d1;
+}
+
+#btn-2 {
+    color: #8b20d1;
+}
+
+#btn-3 {
+    color: #303030;
 }
 
 .option-btn {
