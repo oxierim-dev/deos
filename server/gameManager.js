@@ -111,7 +111,8 @@ class Room {
       powerup: p.powerup,
       color: p.color,
       x: p.x,
-      y: p.y
+      y: p.y,
+      shieldEndTime: p.shieldEndTime
     }));
   }
 

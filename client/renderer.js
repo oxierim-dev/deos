@@ -92,6 +92,7 @@ function updateCanvasPositions(data) {
         localCar.powerup = sp.powerup;
         localCar.x = sp.x;
         localCar.y = sp.y;
+        localCar.shieldEndTime = sp.shieldEndTime;
     });
 
     // Temizlik: Sunucuda olmayan oyuncuları sil
@@ -210,6 +211,21 @@ function drawCars() {
                 ctx.beginPath();
                 ctx.arc(car.x + 30, car.y - 12, 4, 0, Math.PI * 2);
                 ctx.fill();
+            }
+
+            // Kalkan Görseli
+            if (car.shieldEndTime > Date.now()) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(car.x + 30, car.y, 45, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
             }
 
             drawTopDownCar(ctx, car.x, car.y, car.color, car.team, car.hp);

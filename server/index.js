@@ -27,10 +27,21 @@ app.get('/game', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/game.html'));
 });
 
+// Player AFK Timer Objesi
+const playerAfkTimers = new Map();
+
 io.on('connection', (socket) => {
   console.log('Yeni oyuncu bağlandı:', socket.id);
 
   socket.on('join_lobby', (data) => {
+    // 20 Saniye içinde hazır vermezse atılacak
+    const kickTimer = setTimeout(() => {
+        console.log(`Oyuncu ${socket.id} 20 saniye içinde hazır olmadığı için atıldı.`);
+        socket.emit('error_message', { message: '20 Saniye içinde Hazır vermediğiniz için lobiden atıldınız!' });
+        socket.disconnect();
+    }, 20000);
+    playerAfkTimers.set(socket.id, kickTimer);
+
     const mode = (data && data.mode) ? data.mode : 4;
     const playerName = (data && data.name) ? data.name : null;
     
@@ -66,6 +77,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('player_ready', () => {
+    // Hazır verdiyse AFK timer'ı iptal et
+    if (playerAfkTimers.has(socket.id)) {
+        clearTimeout(playerAfkTimers.get(socket.id));
+        playerAfkTimers.delete(socket.id);
+    }
+
     const room = gameManager.getRoomByPlayerId(socket.id);
     if (room) {
       room.setPlayerReady(socket.id);
@@ -93,10 +110,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('shoot', () => {
-    const room = gameManager.getRoomByPlayerId(socket.id);
-    if (room && room.gameState === 'racing') {
-      const player = room.getPlayer(socket.id);
   socket.on('move', (data) => {
     const room = gameManager.getRoomByPlayerId(socket.id);
     if (room && room.gameState === 'racing') {
@@ -219,6 +232,9 @@ io.on('connection', (socket) => {
            if (player.powerup === 'heal') {
                player.hp = Math.min(100, player.hp + 30);
                player.powerup = null;
+           } else if (player.powerup === 'shield') {
+               player.shieldEndTime = Date.now() + 3000; // 3 saniye ölümsüzlük
+               player.powerup = null;
            } else if (player.powerup === 'tripleshot') {
                // Bir sonraki atışta `shoot` eventinde tüketilecek, sadece ui'da yandığını bilelim
            } else if (player.powerup === 'wallbreaker') {
@@ -245,6 +261,11 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Oyuncu ayrıldı:', socket.id);
+    if (playerAfkTimers.has(socket.id)) {
+        clearTimeout(playerAfkTimers.get(socket.id));
+        playerAfkTimers.delete(socket.id);
+    }
+
     const room = gameManager.getRoomByPlayerId(socket.id);
     gameManager.removePlayer(socket.id);
     
@@ -254,7 +275,7 @@ io.on('connection', (socket) => {
         console.log(`Oda ${room.id} tamamen boşaldı, resetleniyor.`);
         gameManager.resetRoom(room.id);
       } else if (room.gameState === 'racing') {
-        // Kalan oyuncuların takımlarına bak
+        // Ayrılan oyuncu varsa takımları kontrol et, eğer takımda hiç adam KALMADIYSA o takım elenir.
         const team1Alive = room.players.some(p => p.team === 1 && p.hp > 0);
         const team2Alive = room.players.some(p => p.team === 2 && p.hp > 0);
         
@@ -310,7 +331,7 @@ setInterval(() => {
       const now = Date.now();
       if (now - room.lastPowerupSpawn > 8000) {
           if (room.powerups.length < 3) {
-              const types = ['heal', 'tripleshot', 'wallbreaker'];
+              const types = ['heal', 'tripleshot', 'wallbreaker', 'shield'];
               const pType = types[Math.floor(Math.random() * types.length)];
               // Haritada rastgele yere düşsün
               room.powerups.push({
@@ -383,8 +404,23 @@ setInterval(() => {
                         proj.y + proj.height > target.y) {
                         
                         hit = true;
-                        target.hp -= proj.damage;
-                        if (target.hp < 0) target.hp = 0;
+                        
+                        // Kalkan kontrolü
+                        if (Date.now() > target.shieldEndTime || target.shieldEndTime === undefined) {
+                            target.hp -= proj.damage;
+                            if (target.hp <= 0) {
+                                target.hp = 0;
+                                // Hasarı alan ölürse maç sonu tetiği buraya kaydırıldı
+                                const team1Alive = room.players.some(p => p.team === 1 && p.hp > 0);
+                                const team2Alive = room.players.some(p => p.team === 2 && p.hp > 0);
+                                if (!team1Alive || !team2Alive) {
+                                    let winnerTeam = team1Alive ? 1 : 2;
+                                    const winner = room.players.find(p => p.team === winnerTeam);
+                                    finishRace(room, winner ? winner.id : null);
+                                    // Hit işlendi, direk döngüyü patlat
+                                }
+                            }
+                        }
                         break;
                     }
                 }
@@ -396,16 +432,9 @@ setInterval(() => {
         }
       }
       
-      // Takım çöküşü (Oyun Sonu) kontrolü
-      const team1Alive = room.players.some(p => p.team === 1 && p.hp > 0);
-      const team2Alive = room.players.some(p => p.team === 2 && p.hp > 0);
-      
-      if (!team1Alive || !team2Alive) {
-          let winnerTeam = team1Alive ? 1 : 2;
-          const winner = room.players.find(p => p.team === winnerTeam);
-          finishRace(room, winner ? winner.id : null);
-          continue;
-      }
+      // Artık sadece HP bazlı ölümle finishRace çağrıldığı için
+      // Her intervaldaki manuel array win/loss taramasını KALDIRDIK.
+      // Sadece disconnectionlarda veya hasar aldıktan sonra ölen varsa taranıyor.
       
       io.to(room.id).emit('combat_state', {
         players: room.getPositions(),
