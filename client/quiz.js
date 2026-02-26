@@ -1,22 +1,27 @@
 // quiz.js
 
-// 10 Soruluk Havuz. Şu anki geçici sorularda bilerek hepsinin cevabı 'A' ayarlandı (index 0)
+// Otonom Araçlar temalı 10 adet gittikçe zorlaşan soru havuzu
 const questions = [
-    { text: "DEOS Car'ın 2026 modeli hangi renk?", options: ["A) Kırmızı", "B) Mavi", "C) Siyah", "D) Beyaz"], correct: 0 },
-    { text: "Lobi'de hazır olmak için kaç saniyeniz var?", options: ["A) 20 Saniye", "B) 10 Saniye", "C) 30 Saniye", "D) 60 Saniye"], correct: 0 },
-    { text: "Kalkan yeteneği arabayı ne kadar korur?", options: ["A) 3 Saniye", "B) Sonsuza dek", "C) 1 Saniye", "D) 5 Saniye"], correct: 0 },
-    { text: "Oyunun ana ekseninde ne vardır?", options: ["A) Araç Savaşı", "B) Çiftçilik", "C) Bulmaca", "D) Simülasyon"], correct: 0 },
-    { text: "Oyunda bir takımdaki maksimum oyuncu sayısı kaçtır?", options: ["A) 2 Oyuncu", "B) 4 Oyuncu", "C) 8 Oyuncu", "D) 1 Oyuncu"], correct: 0 },
-    { text: "Soruları doğru bilirsek ne olur?", options: ["A) Hasar veririz", "B) Oyun Çöker", "C) Şarkı Çalar", "D) Benzin Artar"], correct: 0 },
-    { text: "Siperler oyun ilerledikçe ne hale gelebilir?", options: ["A) Yıkılabilir", "B) Büyürler", "C) Tırmanılır", "D) Sağlık verir"], correct: 0 },
-    { text: "Hangi yetenek duvarları tekte yıkar?", options: ["A) Wall Breaker", "B) Heal", "C) Triple Shot", "D) Shield"], correct: 0 },
-    { text: "Zemin üzerinde arabalarla nasıl hareket edilir?", options: ["A) WASD / Ok Tuşları", "B) Mouse ile", "C) Çizerek", "D) Sesle"], correct: 0 },
-    { text: "DEOS Car'ın gücü tasarımından mı gelir?", options: ["A) Evet kesinlikle", "B) Hayır falandır", "C) Belki", "D) Yok artık"], correct: 0 }
+    { text: "Otonom araçlar etrafını algılamak için hangi temel teknolojileri kullanır?", options: ["A) LIDAR, Radar, Kamera", "B) Sadece GPS", "C) Radyo Dalgaları", "D) Bluetooth"], correct: 0 },
+    { text: "Sürücüye hiç ihtiyaç duyulmayan 'Tam Otonom' sürüş hangi seviyedir?", options: ["A) Seviye 3", "B) Seviye 4", "C) Seviye 5", "D) Seviye 6"], correct: 2 },
+    { text: "Şerit Takip Sistemi (LKA) temel olarak ne işe yarar?", options: ["A) Aracı şeritte tutar", "B) Hızı artırır", "C) Yakıt tasarrufu sağlar", "D) Silecekleri açar"], correct: 0 },
+    { text: "Araçların çevresiyle haberleştiği 'V2X' sisteminin açılımı nedir?", options: ["A) Velocity 2 X", "B) Vehicle to Everything", "C) Value to X", "D) Vision to X"], correct: 1 },
+    { text: "Otonom aracın önünde hiçbir şey yokken aniden fren yapması hatasına ne ad verilir?", options: ["A) Panic Stop", "B) Phantom Braking", "C) Ghost Stop", "D) Sudden Halt"], correct: 1 },
+    { text: "Sürüş sistemlerinde nesne tanıma (object detection) için en sık kullanılan yapay zeka mimarisi hangisidir?", options: ["A) RNN", "B) LSTM", "C) CNN (Evrişimli Sinir Ağları)", "D) GAN"], correct: 2 },
+    { text: "SAE (Otomotiv Mühendisleri Birliği) standartlarına göre 'Koşullu Otonomi' hangi seviyeyi ifade eder?", options: ["A) Seviye 2", "B) Seviye 3", "C) Seviye 4", "D) Seviye 5"], correct: 1 },
+    { text: "Araçlarda haritalama ve lokalizasyon için kullanılan SLAM algoritmasının açılımı nedir?", options: ["A) Simultaneous Localization and Mapping", "B) Simple Location and Movement", "C) Secure Location and Mapping", "D) System Level Auto Movement"], correct: 0 },
+    { text: "LIDAR sensörlerinin otonom araçlardaki kameralara kıyasla en büyük dezavantajı nedir?", options: ["A) Daha yavaş çalışması", "B) Gece görememesi", "C) Yüksek maliyeti", "D) Renkleri ayırt edememesi"], correct: 2 },
+    { text: "Otonom araç simülasyonları geliştirmek için yaygın olarak kullanılan popüler açık kaynaklı platform hangisidir?", options: ["A) CARLA", "B) Unity ML", "C) Unreal Engine", "D) Gazebo"], correct: 0 }
 ];
 
 let currentLevelIndex = 0;
-let enemyMaxHp = 100;
-let enemyHp = 100;
+let enemyMaxHp = 6;
+let enemyHp = 6;
+
+let playerMaxHp = 6;
+let playerHp = 6;
+
+const playerHpFill = document.getElementById('player-hp-fill');
 
 // UI Elements
 const hpFill = document.getElementById('enemy-hp-fill');
@@ -59,7 +64,16 @@ function typeWriterEffect(text, callback) {
 }
 
 function showNextQuestion() {
-    if (currentLevelIndex >= questions.length || enemyHp <= 0) {
+    if (enemyHp <= 0) {
+        winGame();
+        return;
+    }
+    if (playerHp <= 0) {
+        loseGame();
+        return;
+    }
+    if (currentLevelIndex >= questions.length) {
+        // Eğer sorular bittiğinde ölmediysek de kazanalım veya özel durum yapalım. Şimdilik winGame diyelim.
         winGame();
         return;
     }
@@ -88,34 +102,35 @@ function selectAnswer(index) {
 
     const q = questions[currentLevelIndex];
     if (index === q.correct) {
-        // DOĞRU CEVAP
+        // DOĞRU CEVAP - Arabaya vuruyoruz
         dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
-        dialogueText.innerHTML = "Etkili bir vuruş!";
+        dialogueText.innerHTML = "Doğru Cevap! Rakibe hasar verdin!";
         
-        takeDamage(10); // 10 Soru * 10 = 100 Can
+        takeEnemyDamage(1); 
         
         setTimeout(() => {
             currentLevelIndex++;
             showNextQuestion();
         }, 2200);
     } else {
-        // YANLIŞ CEVAP
+        // YANLIŞ CEVAP - Bize vuruyorlar
         dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
-        dialogueText.innerHTML = "Bu vuruş hiç etkili olmadı...";
+        dialogueText.innerHTML = "Yanlış Cevap! Hasar aldın...";
         
-        // Alay etme hali - Mutlu Surat
-        setSprite(SPRITE_HAPPY);
+        takePlayerDamage(1);
+        setSprite(SPRITE_HAPPY); // Araba mutlu oluyor bizi vurduğu için
         
         setTimeout(() => {
             if (enemyHp > 0) setSprite(SPRITE_NORMAL);
+            currentLevelIndex++;
             showNextQuestion();
         }, 2500);
     }
 }
 
-function takeDamage(amount) {
+function takeEnemyDamage(amount) {
     enemyHp -= amount;
     if (enemyHp < 0) enemyHp = 0;
     
@@ -150,8 +165,40 @@ function takeDamage(amount) {
     }, 500); // Hasar animasyon süresi beklemesi
 }
 
+function takePlayerDamage(amount) {
+    playerHp -= amount;
+    if (playerHp < 0) playerHp = 0;
+    
+    // Can Barı Güncellemesi
+    const percent = (playerHp / playerMaxHp) * 100;
+    playerHpFill.style.width = percent + '%';
+    
+    if (percent <= 20) {
+        playerHpFill.className = 'hp-bar-fill hp-red';
+    } else if (percent <= 50) {
+        playerHpFill.className = 'hp-bar-fill hp-yellow';
+    } else {
+        playerHpFill.className = 'hp-bar-fill';
+    }
+
+    // Ekran Titremesi (Hasar alıyoruz)
+    const battleScene = document.getElementById('battle-scene');
+    battleScene.classList.add('damage-anim');
+    setTimeout(() => {
+        battleScene.classList.remove('damage-anim');
+    }, 500);
+}
+
 function winGame() {
     typeWriterEffect("Rakip DEOS CAR bayıldı! SAVAŞI KAZANDIN!", () => {
+        setTimeout(() => {
+            window.location.href = '/'; // Lobiye dön
+        }, 4000);
+    });
+}
+
+function loseGame() {
+    typeWriterEffect("Canın tükendi... Savaşı Kaybettin.", () => {
         setTimeout(() => {
             window.location.href = '/'; // Lobiye dön
         }, 4000);
