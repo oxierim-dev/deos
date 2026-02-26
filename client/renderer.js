@@ -10,34 +10,36 @@ let cars = [];
 let finishLineX;
 let backgroundOffset = 0;
 let trackOffset = 0;
+let particles = [];
 
 // Araba görseli
 const carImage = new Image();
-carImage.src = 'Car1.png';
+carImage.src = 'car_optimized.png';
 
 // Araba çizimi (Image)
 function drawPixelCar(ctx, x, y, color, scale = 1) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale * 0.3, scale * 0.3); // Görseli küçült (Orijinal boyutuna göre ayarla)
-
-    // Araba görselini çiz
-    ctx.drawImage(carImage, 0, 0);
-
-    // Renk filtresi (Basit bir renk ayrımı için altına renkli bir gölge veya overlay ekleyebiliriz)
-    // Ancak görsel tek tip olduğu için, oyuncuları ayırt etmek adına ismin rengini kullanıyoruz zaten.
-    // Yine de arabanın altına oyuncu renginde bir "aura" ekleyelim.
-    
-    ctx.restore();
-    
     // Aura / Seçim halkası (Arabanın kime ait olduğunu belli etmek için)
     ctx.save();
     ctx.translate(x, y);
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = color;
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.ellipse(30, 20, 40, 15, 0, 0, Math.PI * 2);
+    ctx.ellipse(30, 20, 60, 25, 0, 0, Math.PI * 2);
     ctx.stroke();
+
+    // Altındaki zemini neon renkle hafif boyayalım
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.3;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(x, y);
+    // Arabayı yeni boyutuyla çiziyoruz, Image küçültüldüğü için ölçeği 1 yapıyoruz
+    // Resmi ortalayarak çiz
+    ctx.drawImage(carImage, -20, -25);
     ctx.restore();
 }
 
@@ -48,23 +50,23 @@ function initRaceCanvas() {
         console.error('Canvas elementi bulunamadı!');
         return;
     }
-    
+
     ctx = canvas.getContext('2d');
-    
+
     // Canvas boyutlarını ayarla
     const rect = canvas.getBoundingClientRect();
     canvasWidth = rect.width;
     canvasHeight = rect.height;
-    
+
     // Şerit yüksekliğini hesapla
     laneHeight = canvasHeight / lanes;
-    
+
     // Bitiş çizgisi pozisyonu
     finishLineX = canvasWidth - 80;
-    
+
     // Arabaları başlat
     initCars();
-    
+
     // Animasyon döngüsünü başlat
     requestAnimationFrame(animate);
 }
@@ -73,7 +75,7 @@ function initCars() {
     cars = [];
     // Renkleri sabitleyelim ki oyuncular karışmasın
     const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00'];
-    
+
     for (let i = 0; i < lanes; i++) {
         cars.push({
             id: null,
@@ -92,52 +94,89 @@ function initCars() {
 
 function updateCanvasPositions(positions) {
     if (!positions || positions.length === 0) return;
-    
+
     // Hız efekti için track offset güncelle
     // En hızlı arabanın hızına göre arka planı hareket ettir
     // Ancak burada basitçe sürekli bir hareket verelim
     trackOffset -= 2;
     backgroundOffset -= 0.5;
-    
+
     if (trackOffset <= -40) trackOffset = 0;
     if (backgroundOffset <= -canvasWidth) backgroundOffset = 0;
 
     positions.forEach((player) => {
         // Rengine göre doğru arabayı bul
         const carIndex = cars.findIndex(c => c.color === player.color);
-        
+
         if (carIndex !== -1) {
             cars[carIndex].id = player.id;
-            cars[carIndex].name = player.name || `Player ${player.id.substr(0,4)}`; // İsim yoksa ID kullan
+            cars[carIndex].name = player.name || `Player ${player.id.substr(0, 4)}`; // İsim yoksa ID kullan
             cars[carIndex].position = player.position;
-            
+
             // Pozisyona göre X koordinatını güncelle (0-1000 arası)
             // Ekranın %10'undan başlayıp %90'ına kadar gitsin
             const maxPosition = 1000;
             const screenStart = 50;
             const screenEnd = canvasWidth - 100;
             const progress = Math.min(player.position / maxPosition, 1);
-            
+
             // Hedef X pozisyonu
             const targetX = screenStart + (screenEnd - screenStart) * progress;
-            
+
             // Yumuşak geçiş (Interpolation)
             cars[carIndex].x += (targetX - cars[carIndex].x) * 0.1;
-            
+
             // Araba sallanma efekti (Motor çalışıyor hissi)
             cars[carIndex].bobOffset = Math.sin(Date.now() / 100) * 2;
+
+            // Egzoz partikülü ekle (hız hissini artırmak için)
+            if (Math.random() > 0.2) {
+                particles.push({
+                    x: cars[carIndex].x - 10,
+                    y: cars[carIndex].y + 20 + cars[carIndex].bobOffset,
+                    vx: -Math.random() * 5 - 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    life: 1.0,
+                    color: cars[carIndex].color
+                });
+            }
         }
     });
 }
 
 function animate() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    
+
     drawBackground();
     drawTrack();
+    drawParticles();
     drawCars();
-    
+
     requestAnimationFrame(animate);
+}
+
+function drawParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+            continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.random() * 4 + 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
 }
 
 function drawBackground() {
@@ -147,21 +186,21 @@ function drawBackground() {
     gradient.addColorStop(1, '#2a2a40');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    
+
     // Uzak Şehir Silüeti (Paralaks - Yavaş Hareket)
     ctx.save();
     ctx.fillStyle = '#111';
     ctx.translate(backgroundOffset, 0);
-    
+
     // Şehir silüetini iki kez çiz (döngüsel olması için)
-    for(let j=0; j<2; j++) {
+    for (let j = 0; j < 2; j++) {
         let offsetX = j * canvasWidth;
         for (let i = 0; i < 20; i++) {
             const h = 50 + Math.random() * 100;
             const w = 40 + Math.random() * 40;
             const x = i * 60;
             ctx.fillRect(x + offsetX, canvasHeight - h, w, h);
-            
+
             // Pencere ışıkları
             ctx.fillStyle = '#FFFF00';
             if (Math.random() > 0.5) {
@@ -177,13 +216,13 @@ function drawTrack() {
     // Pist Zemini
     ctx.fillStyle = '#222'; // Koyu asfalt
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    
+
     // Şerit Çizgileri (Hareketli)
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 3;
     ctx.setLineDash([20, 20]);
     ctx.lineDashOffset = -trackOffset; // Hareket efekti
-    
+
     for (let i = 1; i < lanes; i++) {
         const y = i * laneHeight;
         ctx.beginPath();
@@ -191,9 +230,9 @@ function drawTrack() {
         ctx.lineTo(canvasWidth, y);
         ctx.stroke();
     }
-    
+
     ctx.setLineDash([]);
-    
+
     // Bitiş Çizgisi (Eğer birisi yaklaştıysa çiz)
     // Basitlik için her zaman çiziyoruz ama konumu sabit
     drawFinishLine();
@@ -204,14 +243,14 @@ function drawFinishLine() {
     const startY = 0;
     const endY = canvasHeight;
     const finishX = canvasWidth - 80;
-    
+
     for (let y = startY; y < endY; y += squareSize) {
         for (let x = 0; x < 20; x += squareSize) {
             ctx.fillStyle = ((x / squareSize) + (y / squareSize)) % 2 === 0 ? '#000000' : '#FFFFFF';
             ctx.fillRect(finishX + x, y, squareSize, squareSize);
         }
     }
-    
+
     // Bitiş yazısı
     ctx.fillStyle = '#FFF';
     ctx.font = 'bold 20px Orbitron';
@@ -230,7 +269,7 @@ function drawCars() {
             ctx.font = '12px Orbitron';
             ctx.textAlign = 'center';
             ctx.fillText(car.name, car.x + 30, car.y - 10 + car.bobOffset);
-            
+
             // Arabayı çiz
             drawPixelCar(ctx, car.x, car.y + car.bobOffset, car.color);
         }

@@ -1,9 +1,9 @@
 const AntiCheat = require('./antiCheat');
 
 class Player {
-  constructor(id) {
+  constructor(id, name) {
     this.id = id;
-    this.name = `Player ${id.substr(0, 6)}`;
+    this.name = name || `Player ${id.substr(0, 6)}`;
     this.color = this.generateColor();
     this.position = 0;
     this.ready = false;
@@ -124,8 +124,8 @@ class GameManager {
     this.rooms.set('room_2', new Room('room_2', 4));
   }
 
-  addPlayer(playerId) {
-    const player = new Player(playerId);
+  addPlayer(playerId, name) {
+    const player = new Player(playerId, name);
     this.players.set(playerId, player);
     return player;
   }
