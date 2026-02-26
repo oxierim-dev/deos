@@ -23,6 +23,13 @@ let playerMaxHp = 6;
 let playerHp = 6;
 
 const playerHpFill = document.getElementById('player-hp-fill');
+const playerSprite = document.getElementById('player-sprite');
+const PLAYER_SPRITE_NORMAL = "/public/anakarakter.png";
+const PLAYER_SPRITE_WIN = "/public/anakarakterkazanınca.png";
+
+function setPlayerSprite(src) {
+    playerSprite.src = src;
+}
 
 // UI Elements
 const hpFill = document.getElementById('enemy-hp-fill');
@@ -81,8 +88,7 @@ function showNextQuestion() {
 
     const q = questions[currentLevelIndex];
     typeWriterEffect(q.text, () => {
-        // Şıkları göster
-        dialogueText.style.display = 'none';
+        // Şıkları göster (soruyu gizleme)
         optionsGrid.style.display = 'grid';
 
         for (let i = 0; i < 4; i++) {
@@ -104,19 +110,19 @@ function selectAnswer(index) {
     const q = questions[currentLevelIndex];
     if (index === q.correct) {
         // DOĞRU CEVAP - Arabaya vuruyoruz
-        dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Doğru Cevap! Rakibe hasar verdin!";
 
         takeEnemyDamage(1);
+        setPlayerSprite(PLAYER_SPRITE_WIN); // 3 seconds win sprite
 
         setTimeout(() => {
             currentLevelIndex++;
+            setPlayerSprite(PLAYER_SPRITE_NORMAL);
             showNextQuestion();
-        }, 2200);
+        }, 3000);
     } else {
         // YANLIŞ CEVAP - Bize vuruyorlar
-        dialogueText.style.display = 'block';
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Yanlış Cevap! Hasar aldın...";
 
@@ -127,7 +133,7 @@ function selectAnswer(index) {
             if (enemyHp > 0) setSprite(SPRITE_NORMAL);
             currentLevelIndex++;
             showNextQuestion();
-        }, 2500);
+        }, 3000);
     }
 }
 

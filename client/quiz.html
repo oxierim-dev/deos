@@ -99,6 +99,7 @@
         document.body.addEventListener('click', () => {
             const bgm = document.getElementById('bg-music');
             if (bgm && bgm.paused) {
+                bgm.volume = 0.7;
                 bgm.play().catch(e => console.log('Autoplay engellendi:', e));
             }
         }, { once: true });
