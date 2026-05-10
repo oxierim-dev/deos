@@ -73,12 +73,24 @@ const SPRITE_NORMAL = "/public/DEOS CAR NORMAL.png";
 const SPRITE_ANGRY = "/public/DEOS CAR SİNİRLİ.png";
 const SPRITE_HAPPY = "/public/DEOS CAR MUTLU.png";
 
+// Ses Efektleri (Preload - anında çalması için önceden yüklüyoruz)
+const sfxDogru = new Audio('/public/dogru.mp3');
+sfxDogru.preload = 'auto';
+const sfxYanlis = new Audio('/public/yanlis.mp3');
+sfxYanlis.preload = 'auto';
+
+function playSound(src, speed) {
+    const sfx = src === '/public/dogru.mp3' ? sfxDogru.cloneNode() : sfxYanlis.cloneNode();
+    sfx.playbackRate = speed || 1.0;
+    sfx.play().catch(e => console.log('SFX engellendi:', e));
+}
+
 // Oyunun Başlatılması
 setTimeout(() => {
     typeWriterEffect("Vahşi DEOS CAR belirdi!", () => {
         setTimeout(showNextQuestion, 2000);
     });
-}, 1000);
+}, 500);
 
 let isTyping = false;
 let typeInterval;
@@ -143,6 +155,7 @@ function selectAnswer(index) {
         // DOĞRU CEVAP - Arabaya vuruyoruz
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Doğru Cevap! Rakibe hasar verdin!";
+        playSound('/public/dogru.mp3', 2.0); // 2x hızda çal
 
         takeEnemyDamage(1);
         setPlayerSprite(PLAYER_SPRITE_WIN); // 3 seconds win sprite
@@ -156,6 +169,7 @@ function selectAnswer(index) {
         // YANLIŞ CEVAP - Bize vuruyorlar
         optionsGrid.style.display = 'none';
         dialogueText.innerHTML = "Yanlış Cevap! Hasar aldın...";
+        playSound('/public/yanlis.mp3', 2.0); // 2x hızda çal
 
         takePlayerDamage(1);
         setSprite(SPRITE_HAPPY); // Araba mutlu oluyor bizi vurduğu için

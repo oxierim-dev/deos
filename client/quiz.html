@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <audio id="bg-music" src="/public/şarkı.mp3" loop autoplay></audio>
+    <audio id="bg-music" src="/public/quizşarkısı.mp3" loop autoplay></audio>
     <div id="gameboy-wrapper">
         <div class="gameboy-top">
             <div class="line"></div>
@@ -68,9 +68,7 @@
 
                 <!-- Dialogue Box -->
                 <div id="dialogue-box">
-                    <div id="dialogue-text">
-                        Vahşi DEOS CAR belirdi!
-                    </div>
+                    <div id="dialogue-text"></div>
                     <div id="options-grid" style="display: none;">
                         <button class="option-btn" onclick="selectAnswer(0)" id="btn-0">A) Seçenek</button>
                         <button class="option-btn" onclick="selectAnswer(1)" id="btn-1">B) Seçenek</button>
@@ -95,11 +93,20 @@
     </div>
 
     <script>
-        // Ses dosyası tetikleyicisi
+        // Sayfa açılır açılmaz çalmayı deniyoruz
+        window.addEventListener('load', () => {
+            const bgm = document.getElementById('bg-music');
+            if (bgm) {
+                bgm.volume = 0.11; // Mevcut 0.22 sesin yarısı
+                bgm.play().catch(e => console.log('Autoplay engellendi (Kullanıcı etkileşimi bekleniyor):', e));
+            }
+        });
+
+        // Otomatik müzik çalma (etkileşimle tetiklenir - Eğer tarayıcı ilk yüklemede engellerse)
         document.body.addEventListener('click', () => {
             const bgm = document.getElementById('bg-music');
             if (bgm && bgm.paused) {
-                bgm.volume = 0.7;
+                bgm.volume = 0.11;
                 bgm.play().catch(e => console.log('Autoplay engellendi:', e));
             }
         }, { once: true });

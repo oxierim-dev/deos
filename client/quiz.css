@@ -164,7 +164,8 @@ body {
 #game-container {
     width: 800px;
     height: 600px;
-    background: linear-gradient(180deg, #d3f9d8 0%, #a2d2a6 50%, #7db983 100%);
+    background: url('/public/oyunarkaplan.jpeg') left bottom/cover no-repeat;
+    background-color: #7db983; /* Görsel yüklenmezse yedek renk */
     position: relative;
     border-radius: 4px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
